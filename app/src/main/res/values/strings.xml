@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">PdfViewerTesting</string>
+
+    <string name="dialog_confirm">確定</string>
+    <string name="dialog_draft_pdf_select_type_error">確定</string>
 </resources>
