@@ -95,6 +95,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun openPDF(pdfFile: File) {
         pdfViewer.fromFile(pdfFile)
+                 .swipeHorizontal(true)
                  .onDraw { canvas, pageWidth, pageHeight, zoom, displayedPage ->
                      addAnWatermark(canvas, pageWidth, pageHeight, zoom)
                  }
