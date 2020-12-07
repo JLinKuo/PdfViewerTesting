@@ -25,6 +25,7 @@ class MainActivity : AppCompatActivity() {
     private val mainActivity by lazy { findViewById<ConstraintLayout>(R.id.main_activity_layout) }
     private val selectPDf by lazy { findViewById<Button>(R.id.main_activity_select_pdf_file) }
     private val addASignArea by lazy { findViewById<Button>(R.id.main_activity_add_a_sign_name_area) }
+    private val addWaterMark by lazy { findViewById<Button>(R.id.main_activity_add_water_mark) }
     private val pdfViewer by lazy { findViewById<PDFView>(R.id.main_activity_pdfviewer) }
 
     private val dirPdfFolder by lazy {
@@ -34,6 +35,8 @@ class MainActivity : AppCompatActivity() {
 
     private val minSignAreaWidth = 180
     private val minSignAreaHeight = minSignAreaWidth / 2
+
+    private var isDrawWaterMark = false     // 判斷是否要繪製浮水印
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -78,6 +81,11 @@ class MainActivity : AppCompatActivity() {
         addASignArea.setOnClickListener {
             addAnSignNameArea()
         }
+
+        addWaterMark.setOnClickListener {
+            isDrawWaterMark = true
+            pdfViewer.invalidate()
+        }
     }
 
     private fun addAnSignNameArea() {
@@ -96,7 +104,9 @@ class MainActivity : AppCompatActivity() {
         pdfViewer.fromFile(pdfFile)
                  .swipeHorizontal(true)
                  .onDraw { canvas, pageWidth, pageHeight, zoom, displayedPage ->
-                     addAnWatermark(canvas, pageWidth, pageHeight, zoom)
+                     if(isDrawWaterMark) {
+                         addAnWatermark(canvas, pageWidth, pageHeight, zoom)
+                     }
                  }
                  .load()
     }

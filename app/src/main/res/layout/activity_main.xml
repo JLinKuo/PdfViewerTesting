@@ -36,6 +36,16 @@
         android:text="Add Sign Name Area"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/main_activity_select_pdf_file"
+        app:layout_constraintEnd_toStartOf="@+id/main_activity_add_water_mark"/>
+
+    <Button
+        android:id="@+id/main_activity_add_water_mark"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:text="Add Water Mark"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/main_activity_add_a_sign_name_area"
         app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
