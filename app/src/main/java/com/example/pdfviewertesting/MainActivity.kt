@@ -90,7 +90,6 @@ class MainActivity : AppCompatActivity() {
         canvas.drawBitmap(scaleBitmap, (pageWidth - scaleBitmap.width) / 2, (pageHeight - scaleBitmap.height) / 2, Paint());
         bitmap.recycle()
         scaleBitmap.recycle()
-        pdfViewer.invalidate()
     }
 
     private fun openPDF(pdfFile: File) {
