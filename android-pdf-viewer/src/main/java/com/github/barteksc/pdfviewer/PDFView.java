@@ -661,6 +661,7 @@ public class PDFView extends RelativeLayout {
             listener.onLayerDrawn(canvas,
                     toCurrentScale(size.getWidth()),
                     toCurrentScale(size.getHeight()),
+                    getZoom(),                          // 20201120: JLin add getZoom()
                     page);
 
             canvas.translate(-translateX, -translateY);

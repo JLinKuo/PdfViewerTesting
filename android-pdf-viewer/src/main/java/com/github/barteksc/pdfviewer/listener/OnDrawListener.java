@@ -34,5 +34,6 @@ public interface OnDrawListener {
      * @param pageHeight    The height of the current page.
      * @param displayedPage The current page index
      */
-    void onLayerDrawn(Canvas canvas, float pageWidth, float pageHeight, int displayedPage);
+    // 20201120: JLin add param: float zoom
+    void onLayerDrawn(Canvas canvas, float pageWidth, float pageHeight, float zoom, int displayedPage);
 }
