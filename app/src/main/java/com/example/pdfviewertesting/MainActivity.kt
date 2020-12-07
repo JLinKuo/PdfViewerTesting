@@ -21,7 +21,7 @@ class MainActivity : AppCompatActivity() {
     private val pdfViewer by lazy { findViewById<PDFView>(R.id.main_activity_pdfviewer) }
 
     private val dirPdfFolder by lazy {
-        File(getExternalFilesDir(null), "$TEMP_SAVE_FILES_PATH${System.currentTimeMillis()}")
+        File(getExternalFilesDir(null), "$TEMP_SAVE_FILES_PATH")
     }
     private var pdfFileName = ""
 
@@ -55,6 +55,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // 開啟電子檔
+        dirPdfFolder.listFiles()?.apply {
+            openPDF(File(this[0].absolutePath))
+        }
 
         selectPDf.setOnClickListener {
             Tools.selectAnPdf(this, "Select PDF File")
