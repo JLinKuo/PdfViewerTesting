@@ -71,6 +71,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -641,9 +643,35 @@ public class PDFView extends RelativeLayout {
 
         drawWithListener(canvas, currentPage, callbacks.getOnDraw());
 
+        //20201201: JLin Added
+        drawSignAreas(canvas, zoom);
+        //
+
         // Restores the canvas position
         canvas.translate(-currentXOffset, -currentYOffset);
     }
+
+    //20201201: JLin Added
+    private void drawSignAreas(Canvas canvas, float zoom) {
+        if(mMapSignAreas.size() != 0) {
+            Paint paint = new Paint();
+            paint.setStyle(Style.STROKE);
+            paint.setStrokeWidth(2);
+            paint.setAntiAlias(true);
+            paint.setColor(Color.RED);
+
+            Iterator<String> mapIterator = mMapSignAreas.keySet().iterator();
+            while(mapIterator.hasNext()) {
+                String key = mapIterator.next();
+                if(mMapSignAreas.get(key) != null) {
+                    SignArea area = mMapSignAreas.get(key);
+                    canvas.drawRect(area.getLeft() * zoom, area.getTop() * zoom,
+                            area.getRight() * zoom, area.getBottom() * zoom, paint);
+                }
+            }
+        }
+    }
+    //
 
     private void drawWithListener(Canvas canvas, int page, OnDrawListener listener) {
         if (listener != null) {
@@ -1560,5 +1588,32 @@ public class PDFView extends RelativeLayout {
                 PDFView.this.load(documentSource, password);
             }
         }
+    }
+
+    //20201201: JLin Added
+    private HashMap<String, SignArea> mMapSignAreas = new HashMap<>();
+    public void addSignArea(String tag, int left, int top, int right, int bottom) {
+        mMapSignAreas.put(tag, new SignArea(left, top, right, bottom));
+    }
+    HashMap<String, SignArea> getMapSignAreas() {
+        return mMapSignAreas;
+    }
+
+    class SignArea {
+        private int left = -1;
+        private int top = -1;
+        private int right = -1;
+        private int bottom = -1;
+
+        SignArea(int left, int top, int right, int bottom) {
+            this.left = left;
+            this.top = top;
+            this.right = right;
+            this.bottom = bottom;
+        }
+        public int getLeft() { return left; }
+        public int getTop() { return top; }
+        public int getRight() { return right; }
+        public int getBottom() { return bottom; }
     }
 }

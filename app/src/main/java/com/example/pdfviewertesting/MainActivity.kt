@@ -89,7 +89,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun addAnSignNameArea() {
-
+        pdfViewer.addSignArea(System.currentTimeMillis().toString(), 100, 100, 700, 300)
+        pdfViewer.invalidate()
     }
 
     private fun addAnWatermark(canvas: Canvas, pageWidth: Float, pageHeight: Float, zoom: Float) {
