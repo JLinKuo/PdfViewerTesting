@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.graphics.scale
 import com.github.barteksc.pdfviewer.PDFView
+import com.github.barteksc.pdfviewer.sign.SignArea
 import java.io.File
 
 internal const val PICK_PDF_RESULT = 555
@@ -37,8 +38,11 @@ class MainActivity : AppCompatActivity() {
     private val minSignAreaHeight = minSignAreaWidth / 2
 
     private var times = 0                   // 用以紀錄繪製第幾個簽名框
+    private var mCurrentPage = 0            // 用以紀錄PDF當前的頁面
 
     private var isDrawWaterMark = false     // 判斷是否要繪製浮水印
+
+    private val mMapPageSignAreas by lazy { HashMap<Int, HashMap<String, SignArea>>() }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -92,9 +96,16 @@ class MainActivity : AppCompatActivity() {
 
     private fun addAnSignNameArea() {
         val offset = times * 50
-        pdfViewer.addSignArea(System.currentTimeMillis().toString(), 100 + offset, 100 + offset, 700 + offset, 300 + offset)
+        addSignArea(mCurrentPage, System.currentTimeMillis().toString(), 100 + offset, 100 + offset, 700 + offset, 300 + offset)
+        pdfViewer.updateMapPageSignAreas(mMapPageSignAreas)
         pdfViewer.invalidate()
         times++
+    }
+
+    private fun addSignArea(pageIndex: Int, tag: String, left: Int, top: Int, right: Int, bottom: Int) {
+        mMapPageSignAreas[pageIndex]?.apply {
+            this[tag] = SignArea(left, top, right, bottom)
+        }
     }
 
     private fun addAnWatermark(canvas: Canvas, pageWidth: Float, pageHeight: Float, zoom: Float) {
@@ -112,6 +123,13 @@ class MainActivity : AppCompatActivity() {
                      if(isDrawWaterMark) {
                          addAnWatermark(canvas, pageWidth, pageHeight, zoom)
                      }
+                 }
+                 .onPageChange { page, pageCount ->
+                     if(mMapPageSignAreas[page].isNullOrEmpty()) {
+                         val mapSignArea = HashMap<String, SignArea>()
+                         mMapPageSignAreas[page] = mapSignArea
+                     }
+                     this.mCurrentPage = page
                  }
                  .load()
     }

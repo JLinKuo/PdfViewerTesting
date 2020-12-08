@@ -51,6 +51,7 @@ import com.github.barteksc.pdfviewer.listener.OnRenderListener;
 import com.github.barteksc.pdfviewer.listener.OnTapListener;
 import com.github.barteksc.pdfviewer.model.PagePart;
 import com.github.barteksc.pdfviewer.scroll.ScrollHandle;
+import com.github.barteksc.pdfviewer.sign.SignArea;
 import com.github.barteksc.pdfviewer.source.AssetSource;
 import com.github.barteksc.pdfviewer.source.ByteArraySource;
 import com.github.barteksc.pdfviewer.source.DocumentSource;
@@ -653,20 +654,36 @@ public class PDFView extends RelativeLayout {
 
     //20201201: JLin Added
     private void drawSignAreas(Canvas canvas, float zoom) {
-        if(mMapSignAreas.size() != 0) {
+        HashMap<String, SignArea> mapSignAreas = mMapPageSignAreas.get(currentPage);
+        if(mapSignAreas != null && mapSignAreas.size() != 0) {
             Paint paint = new Paint();
             paint.setStyle(Style.STROKE);
             paint.setStrokeWidth(2);
             paint.setAntiAlias(true);
             paint.setColor(Color.RED);
 
-            Iterator<String> mapIterator = mMapSignAreas.keySet().iterator();
+            Iterator<String> mapIterator = mapSignAreas.keySet().iterator();
             while(mapIterator.hasNext()) {
                 String key = mapIterator.next();
-                if(mMapSignAreas.get(key) != null) {
-                    SignArea area = mMapSignAreas.get(key);
-                    canvas.drawRect(area.getLeft() * zoom, area.getTop() * zoom,
-                            area.getRight() * zoom, area.getBottom() * zoom, paint);
+                if(mapSignAreas.get(key) != null) {
+                    SignArea area = mapSignAreas.get(key);
+
+                    int offsetX = 0;
+                    int offsetY = 0;
+                    for(int i = 0; i < currentPage ;i++) {      // 累積當頁面之前所有頁面的寬度
+                        SizeF size = getPageSize(currentPage);
+
+                        if(swipeVertical) {
+                            offsetY += size.getHeight();
+                        } else {
+                            offsetX += size.getWidth();
+                        }
+                    }
+
+                    canvas.drawRect(offsetX + area.getLeft() * zoom,
+                                    offsetY + area.getTop() * zoom,
+                                    offsetX + area.getRight() * zoom,
+                                    offsetY + area.getBottom() * zoom, paint);
                 }
             }
         }
@@ -1591,29 +1608,8 @@ public class PDFView extends RelativeLayout {
     }
 
     //20201201: JLin Added
-    private HashMap<String, SignArea> mMapSignAreas = new HashMap<>();
-    public void addSignArea(String tag, int left, int top, int right, int bottom) {
-        mMapSignAreas.put(tag, new SignArea(left, top, right, bottom));
-    }
-    HashMap<String, SignArea> getMapSignAreas() {
-        return mMapSignAreas;
-    }
-
-    class SignArea {
-        private int left = -1;
-        private int top = -1;
-        private int right = -1;
-        private int bottom = -1;
-
-        SignArea(int left, int top, int right, int bottom) {
-            this.left = left;
-            this.top = top;
-            this.right = right;
-            this.bottom = bottom;
-        }
-        public int getLeft() { return left; }
-        public int getTop() { return top; }
-        public int getRight() { return right; }
-        public int getBottom() { return bottom; }
+    private HashMap<Integer, HashMap<String, SignArea>> mMapPageSignAreas = new HashMap<>();
+    public void updateMapPageSignAreas(HashMap<Integer, HashMap<String, SignArea>> map) {
+        this.mMapPageSignAreas = map;
     }
 }
