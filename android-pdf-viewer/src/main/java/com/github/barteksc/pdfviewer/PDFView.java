@@ -668,22 +668,12 @@ public class PDFView extends RelativeLayout {
                 if(mapSignAreas.get(key) != null) {
                     SignArea area = mapSignAreas.get(key);
 
-                    int offsetX = 0;
-                    int offsetY = 0;
-                    for(int i = 0; i < currentPage ;i++) {      // 累積當頁面之前所有頁面的寬度
-                        SizeF size = getPageSize(currentPage);
+                    int[] offset = getPreviousPagesOffset();
 
-                        if(swipeVertical) {
-                            offsetY += size.getHeight();
-                        } else {
-                            offsetX += size.getWidth();
-                        }
-                    }
-
-                    canvas.drawRect(offsetX + area.getLeft() * zoom,
-                                    offsetY + area.getTop() * zoom,
-                                    offsetX + area.getRight() * zoom,
-                                    offsetY + area.getBottom() * zoom, paint);
+                    canvas.drawRect(offset[0] + area.getLeft() * zoom,
+                                    offset[1] + area.getTop() * zoom,
+                                    offset[0] + area.getRight() * zoom,
+                                    offset[1] + area.getBottom() * zoom, paint);
                 }
             }
         }
@@ -1611,5 +1601,20 @@ public class PDFView extends RelativeLayout {
     private HashMap<Integer, HashMap<String, SignArea>> mMapPageSignAreas = new HashMap<>();
     public void updateMapPageSignAreas(HashMap<Integer, HashMap<String, SignArea>> map) {
         this.mMapPageSignAreas = map;
+    }
+    public HashMap<String, SignArea> getCurrentPageMapSignAreas() {
+        return mMapPageSignAreas.get(currentPage);
+    }
+    public int[] getPreviousPagesOffset() {     // 計算目前頁面之前所有頁面的寬度或高度
+        int[] offset = {0, 0};      // offset[0] -> offsetX / offset[1] -> offsetY
+        for(int i = 0; i < currentPage; i++) {
+            SizeF size = getPageSize(currentPage);
+            if(swipeVertical) {
+                offset[1] += size.getHeight();
+            } else {
+                offset[0] += size.getWidth();
+            }
+        }
+        return offset;
     }
 }

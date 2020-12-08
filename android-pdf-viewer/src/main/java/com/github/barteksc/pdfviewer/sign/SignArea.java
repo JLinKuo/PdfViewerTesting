@@ -16,4 +16,21 @@ public class SignArea {
     public int getTop() { return top; }
     public int getRight() { return right; }
     public int getBottom() { return bottom; }
+
+    public SignArea setLeft(int left) {
+        this.left = left;
+        return this;
+    }
+    public SignArea setTop(int top) {
+        this.top = top;
+        return this;
+    }
+    public SignArea setRight(int right) {
+        this.right = right;
+        return this;
+    }
+    public SignArea setBottom(int bottom) {
+        this.bottom = bottom;
+        return this;
+    }
 }

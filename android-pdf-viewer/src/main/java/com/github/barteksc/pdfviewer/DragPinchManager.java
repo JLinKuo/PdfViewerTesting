@@ -24,9 +24,12 @@ import android.view.View;
 
 import com.github.barteksc.pdfviewer.model.LinkTapEvent;
 import com.github.barteksc.pdfviewer.scroll.ScrollHandle;
+import com.github.barteksc.pdfviewer.sign.SignArea;
 import com.github.barteksc.pdfviewer.util.SnapEdge;
 import com.shockwave.pdfium.PdfDocument;
 import com.shockwave.pdfium.util.SizeF;
+import java.util.HashMap;
+import java.util.Iterator;
 
 import static com.github.barteksc.pdfviewer.util.Constants.Pinch.MAXIMUM_ZOOM;
 import static com.github.barteksc.pdfviewer.util.Constants.Pinch.MINIMUM_ZOOM;
@@ -161,6 +164,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     @Override
     public boolean onDown(MotionEvent e) {
         animationManager.stopFling();
+        chkTouchInSignArea(e);
         return true;
     }
 
@@ -170,12 +174,46 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     }
 
     @Override
-    public boolean onSingleTapUp(MotionEvent e) {
-        return false;
-    }
+    public boolean onSingleTapUp(MotionEvent e) { return false; }
 
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+        // 20201204 Jin Added
+        if(mIsTouchInSignArea) {
+            SignArea area = mMapSignAreas.get(mTagCurrentTouchSignArea);
+            int newLeft = area.getLeft() - Math.round(distanceX);
+            int newTop = area.getTop() - Math.round(distanceY);
+            int newRight = area.getRight() - Math.round(distanceX);
+            int newBottom = area.getBottom() - Math.round(distanceY);
+
+            int sizeAreaWidth = area.getRight() - area.getLeft();
+            int sizeAreaHeight = area.getBottom() - area.getTop();
+
+            SizeF pageSize = pdfView.getPageSize(pdfView.getCurrentPage());
+            if(newTop < 0) {
+                newTop = 0;
+                newBottom = sizeAreaHeight;
+            }
+            if(newBottom > pageSize.getHeight()) {
+                newTop = Math.round(pageSize.getHeight()) - sizeAreaHeight;
+                newBottom = Math.round(pageSize.getHeight());
+            }
+            if(newLeft < 0) {
+                newLeft = 0;
+                newRight = sizeAreaWidth;
+            }
+            if(newRight > pageSize.getWidth()) {
+                newLeft = Math.round(pageSize.getWidth()) - sizeAreaWidth;
+                newRight = Math.round(pageSize.getWidth());
+            }
+
+            area.setLeft(newLeft).setTop(newTop).setRight(newRight).setBottom(newBottom);
+            pdfView.invalidate();
+
+            return true;
+        }
+        //
+
         scrolling = true;
         if (pdfView.isZooming() || pdfView.isSwipeEnabled()) {
             pdfView.moveRelativeTo(-distanceX, -distanceY);
@@ -313,5 +351,49 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         float absX = Math.abs(velocityX);
         float absY = Math.abs(velocityY);
         return pdfView.isSwipeVertical() ? absY > absX : absX > absY;
+    }
+
+    // 20201203 JLin add
+    private HashMap<String, SignArea> mMapSignAreas = new HashMap<>();
+    private boolean mIsTouchInSignArea = false;
+    private String mTagCurrentTouchSignArea = "";
+
+    private boolean chkTouchInSignArea(MotionEvent event) {
+        // 20201208 JLin added
+        mMapSignAreas = pdfView.getCurrentPageMapSignAreas();
+
+        if(mMapSignAreas == null) return false;
+
+        // 表示手指沒有觸碰到任何的簽名框
+        mIsTouchInSignArea = false;
+        mTagCurrentTouchSignArea = "";
+
+        if(mMapSignAreas.size() != 0) {
+            Iterator<String> mapIterator = mMapSignAreas.keySet().iterator();
+            while(mapIterator.hasNext()) {
+                String key = mapIterator.next();
+                if(mMapSignAreas.get(key) != null) {
+                    SignArea area = mMapSignAreas.get(key);
+
+                    float xOffset = pdfView.getCurrentXOffset();
+                    float yOffset = pdfView.getCurrentYOffset();
+
+                    int[] offset = pdfView.getPreviousPagesOffset();
+
+                    if (event.getX() - xOffset > offset[0] + area.getLeft() * pdfView.getZoom() &&
+                        event.getX() - xOffset < offset[0] + area.getRight() * pdfView.getZoom() &&
+                        event.getY() - yOffset > offset[1] + area.getTop() * pdfView.getZoom() &&
+                        event.getY() - yOffset < offset[1] + area.getBottom() * pdfView.getZoom()) {
+
+                        mIsTouchInSignArea = true;
+                        mTagCurrentTouchSignArea = key;
+
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 }
