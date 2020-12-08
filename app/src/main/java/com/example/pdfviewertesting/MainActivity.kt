@@ -36,6 +36,8 @@ class MainActivity : AppCompatActivity() {
     private val minSignAreaWidth = 180
     private val minSignAreaHeight = minSignAreaWidth / 2
 
+    private var times = 0                   // 用以紀錄繪製第幾個簽名框
+
     private var isDrawWaterMark = false     // 判斷是否要繪製浮水印
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -89,8 +91,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun addAnSignNameArea() {
-        pdfViewer.addSignArea(System.currentTimeMillis().toString(), 100, 100, 700, 300)
+        val offset = times * 50
+        pdfViewer.addSignArea(System.currentTimeMillis().toString(), 100 + offset, 100 + offset, 700 + offset, 300 + offset)
         pdfViewer.invalidate()
+        times++
     }
 
     private fun addAnWatermark(canvas: Canvas, pageWidth: Float, pageHeight: Float, zoom: Float) {
