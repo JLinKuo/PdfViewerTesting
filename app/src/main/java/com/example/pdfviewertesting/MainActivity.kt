@@ -81,6 +81,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         selectPDf.setOnClickListener {
+            mMapPageSignAreas.clear()
             Tools.selectAnPdf(this, "Select PDF File")
         }
 
