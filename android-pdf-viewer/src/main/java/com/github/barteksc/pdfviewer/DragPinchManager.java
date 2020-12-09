@@ -181,10 +181,10 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         // 20201204 Jin Added
         if(mIsTouchInSignArea) {
             SignArea area = mMapSignAreas.get(mTagCurrentTouchSignArea);
-            int newLeft = area.getLeft() - Math.round(distanceX);
-            int newTop = area.getTop() - Math.round(distanceY);
-            int newRight = area.getRight() - Math.round(distanceX);
-            int newBottom = area.getBottom() - Math.round(distanceY);
+            int newLeft = area.getLeft() - Math.round(distanceX / pdfView.getZoom());
+            int newTop = area.getTop() - Math.round(distanceY / pdfView.getZoom());
+            int newRight = area.getRight() - Math.round(distanceX / pdfView.getZoom());
+            int newBottom = area.getBottom() - Math.round(distanceY / pdfView.getZoom());
 
             int sizeAreaWidth = area.getRight() - area.getLeft();
             int sizeAreaHeight = area.getBottom() - area.getTop();
