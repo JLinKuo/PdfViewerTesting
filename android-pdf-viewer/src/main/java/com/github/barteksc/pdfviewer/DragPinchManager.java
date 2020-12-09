@@ -180,36 +180,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
         // 20201204 Jin Added
         if(mIsTouchInSignArea) {
-            SignArea area = mMapSignAreas.get(mTagCurrentTouchSignArea);
-            int newLeft = area.getLeft() - Math.round(distanceX / pdfView.getZoom());
-            int newTop = area.getTop() - Math.round(distanceY / pdfView.getZoom());
-            int newRight = area.getRight() - Math.round(distanceX / pdfView.getZoom());
-            int newBottom = area.getBottom() - Math.round(distanceY / pdfView.getZoom());
-
-            int sizeAreaWidth = area.getRight() - area.getLeft();
-            int sizeAreaHeight = area.getBottom() - area.getTop();
-
-            SizeF pageSize = pdfView.getPageSize(pdfView.getCurrentPage());
-            if(newTop < 0) {
-                newTop = 0;
-                newBottom = sizeAreaHeight;
-            }
-            if(newBottom > pageSize.getHeight()) {
-                newTop = Math.round(pageSize.getHeight()) - sizeAreaHeight;
-                newBottom = Math.round(pageSize.getHeight());
-            }
-            if(newLeft < 0) {
-                newLeft = 0;
-                newRight = sizeAreaWidth;
-            }
-            if(newRight > pageSize.getWidth()) {
-                newLeft = Math.round(pageSize.getWidth()) - sizeAreaWidth;
-                newRight = Math.round(pageSize.getWidth());
-            }
-
-            area.setLeft(newLeft).setTop(newTop).setRight(newRight).setBottom(newBottom);
-            pdfView.invalidate();
-
+            moveSignArea(distanceX, distanceY);
             return true;
         }
         //
@@ -357,6 +328,38 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     private HashMap<String, SignArea> mMapSignAreas = new HashMap<>();
     private boolean mIsTouchInSignArea = false;
     private String mTagCurrentTouchSignArea = "";
+
+    private void moveSignArea(float distanceX, float distanceY) {
+        SignArea area = mMapSignAreas.get(mTagCurrentTouchSignArea);
+        int newLeft = area.getLeft() - Math.round(distanceX / pdfView.getZoom());
+        int newTop = area.getTop() - Math.round(distanceY / pdfView.getZoom());
+        int newRight = area.getRight() - Math.round(distanceX / pdfView.getZoom());
+        int newBottom = area.getBottom() - Math.round(distanceY / pdfView.getZoom());
+
+        int sizeAreaWidth = area.getRight() - area.getLeft();
+        int sizeAreaHeight = area.getBottom() - area.getTop();
+
+        SizeF pageSize = pdfView.getPageSize(pdfView.getCurrentPage());
+        if(newTop < 0) {
+            newTop = 0;
+            newBottom = sizeAreaHeight;
+        }
+        if(newBottom > pageSize.getHeight()) {
+            newTop = Math.round(pageSize.getHeight()) - sizeAreaHeight;
+            newBottom = Math.round(pageSize.getHeight());
+        }
+        if(newLeft < 0) {
+            newLeft = 0;
+            newRight = sizeAreaWidth;
+        }
+        if(newRight > pageSize.getWidth()) {
+            newLeft = Math.round(pageSize.getWidth()) - sizeAreaWidth;
+            newRight = Math.round(pageSize.getWidth());
+        }
+
+        area.setLeft(newLeft).setTop(newTop).setRight(newRight).setBottom(newBottom);
+        pdfView.invalidate();
+    }
 
     private boolean chkTouchInSignArea(MotionEvent event) {
         // 20201208 JLin added

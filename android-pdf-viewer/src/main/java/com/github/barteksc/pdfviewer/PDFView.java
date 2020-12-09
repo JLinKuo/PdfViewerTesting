@@ -652,34 +652,6 @@ public class PDFView extends RelativeLayout {
         canvas.translate(-currentXOffset, -currentYOffset);
     }
 
-    //20201201: JLin Added
-    private void drawSignAreas(Canvas canvas, float zoom) {
-        HashMap<String, SignArea> mapSignAreas = mMapPageSignAreas.get(currentPage);
-        if(mapSignAreas != null && mapSignAreas.size() != 0) {
-            Paint paint = new Paint();
-            paint.setStyle(Style.STROKE);
-            paint.setStrokeWidth(2);
-            paint.setAntiAlias(true);
-            paint.setColor(Color.RED);
-
-            Iterator<String> mapIterator = mapSignAreas.keySet().iterator();
-            while(mapIterator.hasNext()) {
-                String key = mapIterator.next();
-                if(mapSignAreas.get(key) != null) {
-                    SignArea area = mapSignAreas.get(key);
-
-                    int[] offset = getPreviousPagesOffset();
-
-                    canvas.drawRect(offset[0] + area.getLeft() * zoom,
-                                    offset[1] + area.getTop() * zoom,
-                                    offset[0] + area.getRight() * zoom,
-                                    offset[1] + area.getBottom() * zoom, paint);
-                }
-            }
-        }
-    }
-    //
-
     private void drawWithListener(Canvas canvas, int page, OnDrawListener listener) {
         if (listener != null) {
             float translateX, translateY;
@@ -1599,6 +1571,33 @@ public class PDFView extends RelativeLayout {
 
     //20201201: JLin Added
     private HashMap<Integer, HashMap<String, SignArea>> mMapPageSignAreas = new HashMap<>();
+
+    private void drawSignAreas(Canvas canvas, float zoom) {
+        HashMap<String, SignArea> mapSignAreas = mMapPageSignAreas.get(currentPage);
+        if(mapSignAreas != null && mapSignAreas.size() != 0) {
+            Paint paint = new Paint();
+            paint.setStyle(Style.STROKE);
+            paint.setStrokeWidth(2);
+            paint.setAntiAlias(true);
+            paint.setColor(Color.RED);
+
+            Iterator<String> mapIterator = mapSignAreas.keySet().iterator();
+            while(mapIterator.hasNext()) {
+                String key = mapIterator.next();
+                if(mapSignAreas.get(key) != null) {
+                    SignArea area = mapSignAreas.get(key);
+
+                    int[] offset = getPreviousPagesOffset();
+
+                    canvas.drawRect(offset[0] + area.getLeft() * zoom,
+                                    offset[1] + area.getTop() * zoom,
+                                    offset[0] + area.getRight() * zoom,
+                                    offset[1] + area.getBottom() * zoom, paint);
+                }
+            }
+        }
+    }
+
     public void updateMapPageSignAreas(HashMap<Integer, HashMap<String, SignArea>> map) {
         this.mMapPageSignAreas = map;
     }
@@ -1610,9 +1609,9 @@ public class PDFView extends RelativeLayout {
         for(int i = 0; i < currentPage; i++) {
             SizeF size = getPageSize(currentPage);
             if(swipeVertical) {
-                offset[1] += size.getHeight();
+                offset[1] += size.getHeight() * zoom;
             } else {
-                offset[0] += size.getWidth();
+                offset[0] += size.getWidth() * zoom;
             }
         }
         return offset;
