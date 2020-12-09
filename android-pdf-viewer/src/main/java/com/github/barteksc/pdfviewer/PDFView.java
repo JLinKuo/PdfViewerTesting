@@ -1587,12 +1587,14 @@ public class PDFView extends RelativeLayout {
                 if(mapSignAreas.get(key) != null) {
                     SignArea area = mapSignAreas.get(key);
 
-                    int[] offset = getPreviousPagesOffset();
+                    int[] pagesOffset = getPreviousPagesOffset();
+                    float[] spaceOffset = getEachPageSpaceOffset();
 
-                    canvas.drawRect(offset[0] + area.getLeft() * zoom,
-                                    offset[1] + area.getTop() * zoom,
-                                    offset[0] + area.getRight() * zoom,
-                                    offset[1] + area.getBottom() * zoom, paint);
+                    canvas.drawRect(pagesOffset[0] + area.getLeft() * zoom + spaceOffset[0],
+                                    pagesOffset[1] + area.getTop() * zoom + spaceOffset[1],
+                                    pagesOffset[0] + area.getRight() * zoom + spaceOffset[0],
+                                    pagesOffset[1] + area.getBottom() * zoom + spaceOffset[1],
+                                    paint);
                 }
             }
         }
@@ -1612,6 +1614,17 @@ public class PDFView extends RelativeLayout {
                 offset[1] += size.getHeight() * zoom;
             } else {
                 offset[0] += size.getWidth() * zoom;
+            }
+        }
+        return offset;
+    }
+    public float[] getEachPageSpaceOffset() {
+        float[] offset = {0, 0};
+        if(currentPage != 0) {
+            if (swipeVertical) {
+                offset[1] = spacingPx * zoom;
+            } else {
+                offset[0] = spacingPx * zoom;
             }
         }
         return offset;

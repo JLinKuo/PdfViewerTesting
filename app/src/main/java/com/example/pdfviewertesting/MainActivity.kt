@@ -119,6 +119,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun openPDF(pdfFile: File) {
         pdfViewer.fromFile(pdfFile)
+                 .spacing(4)
                  .swipeHorizontal(true)
                  .onDraw { canvas, pageWidth, pageHeight, zoom, displayedPage ->
                      if(isDrawWaterMark) {
