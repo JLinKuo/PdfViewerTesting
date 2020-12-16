@@ -18,6 +18,8 @@ import java.io.File
 
 internal const val PICK_PDF_RESULT = 555
 internal const val TEMP_SAVE_FILES_PATH = "temp/"
+private const val SIGN_NAME_AREA_WIDTH = 600
+private const val SIGN_NAME_AREA_HEIGHT = SIGN_NAME_AREA_WIDTH / 2
 
 class MainActivity : AppCompatActivity() {
 
@@ -97,8 +99,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun addAnSignNameArea() {
         val offset = times * 50
-        addSignArea(mCurrentPage, System.currentTimeMillis().toString(), 100 + offset, 100 + offset, 700 + offset, 300 + offset)
-        pdfViewer.updateMapPageSignAreas(mMapPageSignAreas)
+
+        val centerX = pdfViewer.width / 2
+        val centerY = pdfViewer.height / 2
+
+        val signLeft = centerX - SIGN_NAME_AREA_WIDTH / 2
+        val signTop = centerY - SIGN_NAME_AREA_HEIGHT
+
+        addSignArea(mCurrentPage, System.currentTimeMillis().toString(), signLeft + offset,
+            signTop + offset, signLeft + SIGN_NAME_AREA_WIDTH + offset, signTop + SIGN_NAME_AREA_HEIGHT + offset)
         pdfViewer.invalidate()
         times++
     }
@@ -106,6 +115,7 @@ class MainActivity : AppCompatActivity() {
     private fun addSignArea(pageIndex: Int, tag: String, left: Int, top: Int, right: Int, bottom: Int) {
         mMapPageSignAreas[pageIndex]?.apply {
             this[tag] = SignArea(left, top, right, bottom)
+            pdfViewer.updateMapPageSignAreas(mMapPageSignAreas)
         }
     }
 
