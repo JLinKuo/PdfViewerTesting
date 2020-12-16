@@ -128,6 +128,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openPDF(pdfFile: File) {
+        pdfViewer.maxZoom = 2F
         pdfViewer.fromFile(pdfFile)
                  .spacing(4)
                  .swipeHorizontal(true)
