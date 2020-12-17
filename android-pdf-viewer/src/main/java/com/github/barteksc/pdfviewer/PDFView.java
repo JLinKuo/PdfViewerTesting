@@ -54,6 +54,7 @@ import com.github.barteksc.pdfviewer.listener.OnTapListener;
 import com.github.barteksc.pdfviewer.model.PagePart;
 import com.github.barteksc.pdfviewer.scroll.ScrollHandle;
 import com.github.barteksc.pdfviewer.sign.SignArea;
+import com.github.barteksc.pdfviewer.sign.SignArea.*;
 import com.github.barteksc.pdfviewer.source.AssetSource;
 import com.github.barteksc.pdfviewer.source.ByteArraySource;
 import com.github.barteksc.pdfviewer.source.DocumentSource;
@@ -1591,35 +1592,46 @@ public class PDFView extends RelativeLayout {
             Iterator<String> mapIterator = mapSignAreas.keySet().iterator();
             while(mapIterator.hasNext()) {
                 String key = mapIterator.next();
-                if(mapSignAreas.get(key) != null) {
-                    SignArea area = mapSignAreas.get(key);
-
+                SignArea area = mapSignAreas.get(key);
+                if(area != null) {
                     int[] pagesOffset = getPreviousPagesOffset();
                     float[] spaceOffset = getEachPageSpaceOffset();
 
-                    canvas.drawRect(pagesOffset[0] + area.getLeft() * zoom + spaceOffset[0],
-                                    pagesOffset[1] + area.getTop() * zoom + spaceOffset[1],
-                                    pagesOffset[0] + area.getRight() * zoom + spaceOffset[0],
-                                    pagesOffset[1] + area.getBottom() * zoom + spaceOffset[1],
-                                    outlinePaint);
-                    canvas.drawRect(pagesOffset[0] + area.getLeft() * zoom + spaceOffset[0],
-                            pagesOffset[1] + area.getTop() * zoom + spaceOffset[1],
-                            pagesOffset[0] + area.getRight() * zoom + spaceOffset[0],
-                            pagesOffset[1] + area.getBottom() * zoom + spaceOffset[1],
-                            bgPaint);
-                    Paint clzPaint = new Paint();
-                    Bitmap closeBitmap = drawable2Bitmap(ResourcesCompat.getDrawable(
+                    float[] areaSize = getAreaSize(area, pagesOffset, spaceOffset);
+                    // 畫出簽名框的背景
+                    canvas.drawRect(areaSize[0], areaSize[2], areaSize[1], areaSize[3], bgPaint);
+                    // 畫出簽名框的外框
+                    canvas.drawRect(areaSize[0], areaSize[2], areaSize[1], areaSize[3], outlinePaint);
+                    // 畫出刪除簽名框的功能按鈕
+                    Bitmap clzBitmap = drawable2Bitmap(ResourcesCompat.getDrawable(
                             getResources(), R.drawable.ic_icon_delete_red_bg, null));
-                    canvas.drawBitmap(closeBitmap,
-                            pagesOffset[0] + area.getRight() * zoom + spaceOffset[0] - closeBitmap.getWidth() / 2F,
-                            pagesOffset[1] + area.getTop() * zoom + spaceOffset[1] - closeBitmap.getHeight() /2F,
-                            clzPaint);
-                    closeBitmap.recycle();
+                    float[] clzBallSize = setClzBallSize(area.getCloseBall(), clzBitmap.getWidth(),
+                                          clzBitmap.getHeight(), areaSize);
+                    canvas.drawBitmap(clzBitmap, clzBallSize[0], clzBallSize[2], new Paint());
+                    clzBitmap.recycle();
+                    // todo: 畫出新增簽名框的功能按鈕
+                    // todo: 畫出放大縮小簽名框的功能按鈕
                 }
             }
         }
     }
 
+    private float[] getAreaSize(SignArea area, int[] pagesOffset, float[] spaceOffset) {
+        return new float[]{
+                pagesOffset[0] + area.getLeft() * zoom + spaceOffset[0],        // Left
+                pagesOffset[0] + area.getRight() * zoom + spaceOffset[0],       // Right
+                pagesOffset[1] + area.getTop() * zoom + spaceOffset[1],         // Top
+                pagesOffset[1] + area.getBottom() * zoom + spaceOffset[1]       // Bottom
+        };
+    }
+    private float[] setClzBallSize(CloseBall ball, int width, int height, float[] areaSize) {
+        float[] ballSize = new float[] { areaSize[1] - width / 2F,              // Left
+                                         areaSize[1] + width / 2F,              // Right
+                                         areaSize[2] - height / 2F,             // Top
+                                         areaSize[2] + height / 2F };           // Bottom
+        ball.setLeft(ballSize[0]).setRight(ballSize[1]).setTop(ballSize[2]).setBottom(ballSize[3]);
+        return ballSize;
+    }
     public void updateMapPageSignAreas(HashMap<Integer, HashMap<String, SignArea>> map) {
         this.mMapPageSignAreas = map;
     }
