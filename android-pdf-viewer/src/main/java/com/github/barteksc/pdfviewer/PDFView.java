@@ -1575,11 +1575,16 @@ public class PDFView extends RelativeLayout {
     private void drawSignAreas(Canvas canvas, float zoom) {
         HashMap<String, SignArea> mapSignAreas = mMapPageSignAreas.get(currentPage);
         if(mapSignAreas != null && mapSignAreas.size() != 0) {
-            Paint paint = new Paint();
-            paint.setStyle(Style.STROKE);
-            paint.setStrokeWidth(2);
-            paint.setAntiAlias(true);
-            paint.setColor(Color.RED);
+            Paint outlinePaint = new Paint();
+            outlinePaint.setStyle(Style.STROKE);
+            outlinePaint.setStrokeWidth(8);
+            outlinePaint.setAntiAlias(true);
+            outlinePaint.setColor(Color.RED);
+
+            Paint bgPaint = new Paint();
+            bgPaint.setStyle(Style.FILL);
+            int alphaRed = Color.argb(127, 255, 0, 0);
+            bgPaint.setColor(alphaRed);
 
             Iterator<String> mapIterator = mapSignAreas.keySet().iterator();
             while(mapIterator.hasNext()) {
@@ -1594,7 +1599,12 @@ public class PDFView extends RelativeLayout {
                                     pagesOffset[1] + area.getTop() * zoom + spaceOffset[1],
                                     pagesOffset[0] + area.getRight() * zoom + spaceOffset[0],
                                     pagesOffset[1] + area.getBottom() * zoom + spaceOffset[1],
-                                    paint);
+                                    outlinePaint);
+                    canvas.drawRect(pagesOffset[0] + area.getLeft() * zoom + spaceOffset[0],
+                            pagesOffset[1] + area.getTop() * zoom + spaceOffset[1],
+                            pagesOffset[0] + area.getRight() * zoom + spaceOffset[0],
+                            pagesOffset[1] + area.getBottom() * zoom + spaceOffset[1],
+                            bgPaint);
                 }
             }
         }
