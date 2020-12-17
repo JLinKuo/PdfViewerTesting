@@ -375,22 +375,19 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
             Iterator<String> mapIterator = mMapSignAreas.keySet().iterator();
             while(mapIterator.hasNext()) {
                 String key = mapIterator.next();
-                if(mMapSignAreas.get(key) != null) {
-                    SignArea area = mMapSignAreas.get(key);
+
+                SignArea area = mMapSignAreas.get(key);
+                if(area != null) {
+                    int[] pagesOffset = pdfView.getPreviousPagesOffset();
 
                     float xOffset = pdfView.getCurrentXOffset();
                     float yOffset = pdfView.getCurrentYOffset();
+                    float eventXOffset = event.getX() - xOffset;
+                    float eventYOffset = event.getY() - yOffset;
 
-                    int[] offset = pdfView.getPreviousPagesOffset();
-
-                    if (event.getX() - xOffset > offset[0] + area.getLeft() * pdfView.getZoom() &&
-                        event.getX() - xOffset < offset[0] + area.getRight() * pdfView.getZoom() &&
-                        event.getY() - yOffset > offset[1] + area.getTop() * pdfView.getZoom() &&
-                        event.getY() - yOffset < offset[1] + area.getBottom() * pdfView.getZoom()) {
-
+                    if (isInAnSignArea(area, pagesOffset, eventXOffset, eventYOffset)) {
                         mIsTouchInSignArea = true;
                         mTagCurrentTouchSignArea = key;
-
                         return true;
                     }
                 }
@@ -398,5 +395,14 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         }
 
         return false;
+    }
+
+    private boolean isInAnSignArea(SignArea area, int[] pagesOffset, float eventX, float eventY) {
+        float areaLeft = pagesOffset[0] + area.getLeft() * pdfView.getZoom();
+        float areaRight = pagesOffset[0] + area.getRight() * pdfView.getZoom();
+        float areaTop = pagesOffset[1] + area.getTop() * pdfView.getZoom();
+        float areaBottom = pagesOffset[1] + area.getBottom() * pdfView.getZoom();
+
+        return eventX > areaLeft && eventX < areaRight && eventY > areaTop && eventY < areaBottom;
     }
 }
