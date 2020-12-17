@@ -27,6 +27,7 @@ import android.graphics.PaintFlagsDrawFilter;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -35,6 +36,7 @@ import android.os.HandlerThread;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.widget.RelativeLayout;
+import androidx.core.content.res.ResourcesCompat;
 
 import com.github.barteksc.pdfviewer.exception.PageRenderingException;
 import com.github.barteksc.pdfviewer.link.DefaultLinkHandler;
@@ -1605,6 +1607,14 @@ public class PDFView extends RelativeLayout {
                             pagesOffset[0] + area.getRight() * zoom + spaceOffset[0],
                             pagesOffset[1] + area.getBottom() * zoom + spaceOffset[1],
                             bgPaint);
+                    Paint clzPaint = new Paint();
+                    Bitmap closeBitmap = drawable2Bitmap(ResourcesCompat.getDrawable(
+                            getResources(), R.drawable.ic_icon_delete_red_bg, null));
+                    canvas.drawBitmap(closeBitmap,
+                            pagesOffset[0] + area.getRight() * zoom + spaceOffset[0] - closeBitmap.getWidth() / 2F,
+                            pagesOffset[1] + area.getTop() * zoom + spaceOffset[1] - closeBitmap.getHeight() /2F,
+                            clzPaint);
+                    closeBitmap.recycle();
                 }
             }
         }
@@ -1638,5 +1648,18 @@ public class PDFView extends RelativeLayout {
             }
         }
         return offset;
+    }
+    private Bitmap drawable2Bitmap(Drawable drawable) {
+        if(drawable instanceof BitmapDrawable) {
+            return ((BitmapDrawable)drawable).getBitmap();
+        }
+
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(),
+                drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+
+        return bitmap;
     }
 }
