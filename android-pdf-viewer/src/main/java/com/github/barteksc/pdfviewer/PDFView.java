@@ -1603,12 +1603,12 @@ public class PDFView extends RelativeLayout {
                     // 畫出簽名框的外框
                     canvas.drawRect(areaSize[0], areaSize[2], areaSize[1], areaSize[3], outlinePaint);
                     // 畫出刪除簽名框的功能按鈕
-                    Bitmap clzBitmap = drawable2Bitmap(ResourcesCompat.getDrawable(
+                    Bitmap delBitmap = drawable2Bitmap(ResourcesCompat.getDrawable(
                             getResources(), R.drawable.ic_icon_delete_red_bg, null));
-                    float[] clzBallSize = setClzBallSize(area.getCloseBall(), clzBitmap.getWidth(),
-                                          clzBitmap.getHeight(), areaSize);
-                    canvas.drawBitmap(clzBitmap, clzBallSize[0], clzBallSize[2], new Paint());
-                    clzBitmap.recycle();
+                    float[] delBallSize = setDelBallSize(area.getDelBall(), delBitmap.getWidth(),
+                                          delBitmap.getHeight(), areaSize);
+                    canvas.drawBitmap(delBitmap, delBallSize[0], delBallSize[2], new Paint());
+                    delBitmap.recycle();
                     // todo: 畫出新增簽名框的功能按鈕
                     // todo: 畫出放大縮小簽名框的功能按鈕
                 }
@@ -1624,7 +1624,7 @@ public class PDFView extends RelativeLayout {
                 pagesOffset[1] + area.getBottom() * zoom + spaceOffset[1]       // Bottom
         };
     }
-    private float[] setClzBallSize(CloseBall ball, int width, int height, float[] areaSize) {
+    private float[] setDelBallSize(DelBall ball, int width, int height, float[] areaSize) {
         float[] ballSize = new float[] { areaSize[1] - width / 2F,              // Left
                                          areaSize[1] + width / 2F,              // Right
                                          areaSize[2] - height / 2F,             // Top

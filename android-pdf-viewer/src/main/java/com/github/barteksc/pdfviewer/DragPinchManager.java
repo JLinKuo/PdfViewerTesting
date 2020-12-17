@@ -176,7 +176,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
     @Override
     public boolean onSingleTapUp(MotionEvent e) {
-        if(mIsTouchInCloseBall) {
+        if(mIsTouchInDelBall) {
             deleteSignArea();
             return true;
         }
@@ -205,7 +205,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     private void deleteSignArea() {
         pdfView.getMapSignAreas().remove(mTagCurrentTouchSignArea);
         pdfView.invalidate();
-        mIsTouchInCloseBall = false;
+        mIsTouchInDelBall = false;
     }
 
     private void onScrollEnd(MotionEvent event) {
@@ -341,7 +341,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     private HashMap<String, SignArea> mMapSignAreas = new HashMap<>();
     private String mTagCurrentTouchSignArea = "";
     private boolean mIsTouchInSignArea = false;
-    private boolean mIsTouchInCloseBall = false;
+    private boolean mIsTouchInDelBall = false;
 
     private void moveSignArea(float distanceX, float distanceY) {
         SignArea area = mMapSignAreas.get(mTagCurrentTouchSignArea);
@@ -382,7 +382,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         if(mMapSignAreas == null) return false;
 
         // 表示手指沒有觸碰到任何的簽名框
-        mIsTouchInCloseBall = false;
+        mIsTouchInDelBall = false;
         mIsTouchInSignArea = false;
         mTagCurrentTouchSignArea = "";
 
@@ -400,8 +400,8 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
                     float eventXOffset = event.getX() - xOffset;
                     float eventYOffset = event.getY() - yOffset;
 
-                    if(isInCloseBall(area.getCloseBall(), pagesOffset, eventXOffset, eventYOffset)) {
-                        mIsTouchInCloseBall = true;
+                    if(isInDelBall(area.getDelBall(), pagesOffset, eventXOffset, eventYOffset)) {
+                        mIsTouchInDelBall = true;
                         mTagCurrentTouchSignArea = key;
                       return true;
                     } else if (isInAnSignArea(area, pagesOffset, eventXOffset, eventYOffset)) {
@@ -416,7 +416,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         return false;
     }
 
-    private boolean isInCloseBall(CloseBall ball, int[] pagesOffset, float eventX, float eventY) {
+    private boolean isInDelBall(DelBall ball, int[] pagesOffset, float eventX, float eventY) {
         float ballLeft = pagesOffset[0] + ball.getLeft();
         float ballRight = pagesOffset[0] + ball.getRight();
         float ballTop = pagesOffset[1] + ball.getTop();
