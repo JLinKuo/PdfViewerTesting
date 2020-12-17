@@ -1632,6 +1632,12 @@ public class PDFView extends RelativeLayout {
         ball.setLeft(ballSize[0]).setRight(ballSize[1]).setTop(ballSize[2]).setBottom(ballSize[3]);
         return ballSize;
     }
+    public HashMap<String, SignArea> getMapSignAreas() {
+        return mMapPageSignAreas.get(currentPage);
+    }
+    public HashMap<Integer, HashMap<String, SignArea>> getMapPageSignAreas() {
+        return mMapPageSignAreas;
+    }
     public void updateMapPageSignAreas(HashMap<Integer, HashMap<String, SignArea>> map) {
         this.mMapPageSignAreas = map;
     }

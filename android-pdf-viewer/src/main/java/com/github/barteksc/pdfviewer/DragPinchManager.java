@@ -25,6 +25,7 @@ import android.view.View;
 import com.github.barteksc.pdfviewer.model.LinkTapEvent;
 import com.github.barteksc.pdfviewer.scroll.ScrollHandle;
 import com.github.barteksc.pdfviewer.sign.SignArea;
+import com.github.barteksc.pdfviewer.sign.SignArea.*;
 import com.github.barteksc.pdfviewer.util.SnapEdge;
 import com.shockwave.pdfium.PdfDocument;
 import com.shockwave.pdfium.util.SizeF;
@@ -174,7 +175,13 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     }
 
     @Override
-    public boolean onSingleTapUp(MotionEvent e) { return false; }
+    public boolean onSingleTapUp(MotionEvent e) {
+        if(mIsTouchInCloseBall) {
+            deleteSignArea();
+            return true;
+        }
+        return false;
+    }
 
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
@@ -193,6 +200,12 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
             pdfView.loadPageByOffset();
         }
         return true;
+    }
+
+    private void deleteSignArea() {
+        pdfView.getMapSignAreas().remove(mTagCurrentTouchSignArea);
+        pdfView.invalidate();
+        mIsTouchInCloseBall = false;
     }
 
     private void onScrollEnd(MotionEvent event) {
@@ -326,8 +339,9 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
     // 20201203 JLin add
     private HashMap<String, SignArea> mMapSignAreas = new HashMap<>();
-    private boolean mIsTouchInSignArea = false;
     private String mTagCurrentTouchSignArea = "";
+    private boolean mIsTouchInSignArea = false;
+    private boolean mIsTouchInCloseBall = false;
 
     private void moveSignArea(float distanceX, float distanceY) {
         SignArea area = mMapSignAreas.get(mTagCurrentTouchSignArea);
@@ -368,6 +382,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         if(mMapSignAreas == null) return false;
 
         // 表示手指沒有觸碰到任何的簽名框
+        mIsTouchInCloseBall = false;
         mIsTouchInSignArea = false;
         mTagCurrentTouchSignArea = "";
 
@@ -385,7 +400,11 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
                     float eventXOffset = event.getX() - xOffset;
                     float eventYOffset = event.getY() - yOffset;
 
-                    if (isInAnSignArea(area, pagesOffset, eventXOffset, eventYOffset)) {
+                    if(isInCloseBall(area.getCloseBall(), pagesOffset, eventXOffset, eventYOffset)) {
+                        mIsTouchInCloseBall = true;
+                        mTagCurrentTouchSignArea = key;
+                      return true;
+                    } else if (isInAnSignArea(area, pagesOffset, eventXOffset, eventYOffset)) {
                         mIsTouchInSignArea = true;
                         mTagCurrentTouchSignArea = key;
                         return true;
@@ -395,6 +414,16 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         }
 
         return false;
+    }
+
+    private boolean isInCloseBall(CloseBall ball, int[] pagesOffset, float eventX, float eventY) {
+        float ballLeft = pagesOffset[0] + ball.getLeft();
+        float ballRight = pagesOffset[0] + ball.getRight();
+        float ballTop = pagesOffset[1] + ball.getTop();
+        float ballBottom = pagesOffset[1] + ball.getBottom();
+
+        return eventX > ballLeft && eventX < ballRight && eventY > ballTop && eventY < ballBottom;
+
     }
 
     private boolean isInAnSignArea(SignArea area, int[] pagesOffset, float eventX, float eventY) {

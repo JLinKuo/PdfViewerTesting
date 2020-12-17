@@ -44,8 +44,6 @@ class MainActivity : AppCompatActivity() {
 
     private var isDrawWaterMark = false     // 判斷是否要繪製浮水印
 
-    private val mMapPageSignAreas by lazy { HashMap<Int, HashMap<String, SignArea>>() }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -78,12 +76,12 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         // 開啟電子檔
-        dirPdfFolder.listFiles()?.apply {
+        val apply = dirPdfFolder.listFiles()?.apply {
             openPDF(File(this[0].absolutePath))
         }
 
         selectPDf.setOnClickListener {
-            mMapPageSignAreas.clear()
+            pdfViewer.mapPageSignAreas.clear()
             Tools.selectAnPdf(this, "Select PDF File")
         }
 
@@ -113,9 +111,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun addSignArea(pageIndex: Int, tag: String, left: Int, top: Int, right: Int, bottom: Int) {
-        mMapPageSignAreas[pageIndex]?.apply {
+        pdfViewer.mapPageSignAreas[pageIndex]?.apply {
             this[tag] = SignArea(left, top, right, bottom)
-            pdfViewer.updateMapPageSignAreas(mMapPageSignAreas)
         }
     }
 
@@ -138,9 +135,9 @@ class MainActivity : AppCompatActivity() {
                      }
                  }
                  .onPageChange { page, pageCount ->
-                     if(mMapPageSignAreas[page].isNullOrEmpty()) {
+                     if(pdfViewer.mapPageSignAreas[page].isNullOrEmpty()) {
                          val mapSignArea = HashMap<String, SignArea>()
-                         mMapPageSignAreas[page] = mapSignArea
+                         pdfViewer.mapPageSignAreas[page] = mapSignArea
                      }
                      this.mCurrentPage = page
                  }
