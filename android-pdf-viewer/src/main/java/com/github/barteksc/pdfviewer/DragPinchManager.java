@@ -400,7 +400,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
                     float eventXOffset = event.getX() - xOffset;
                     float eventYOffset = event.getY() - yOffset;
 
-                    if(isInDelBall(area.getDelBall(), pagesOffset, eventXOffset, eventYOffset)) {
+                    if(isInDelBall(area.getDelBall(), eventXOffset, eventYOffset)) {
                         mIsTouchInDelBall = true;
                         mTagCurrentTouchSignArea = key;
                       return true;
@@ -416,14 +416,13 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         return false;
     }
 
-    private boolean isInDelBall(DelBall ball, int[] pagesOffset, float eventX, float eventY) {
-        float ballLeft = pagesOffset[0] + ball.getLeft();
-        float ballRight = pagesOffset[0] + ball.getRight();
-        float ballTop = pagesOffset[1] + ball.getTop();
-        float ballBottom = pagesOffset[1] + ball.getBottom();
+    private boolean isInDelBall(DelBall ball, float eventX, float eventY) {
+        float ballLeft = ball.getLeft();
+        float ballRight = ball.getRight();
+        float ballTop = ball.getTop();
+        float ballBottom = ball.getBottom();
 
         return eventX > ballLeft && eventX < ballRight && eventY > ballTop && eventY < ballBottom;
-
     }
 
     private boolean isInAnSignArea(SignArea area, int[] pagesOffset, float eventX, float eventY) {
