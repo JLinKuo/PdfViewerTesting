@@ -181,6 +181,9 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         if(mIsTouchInDelBall) {
             deleteSignArea();
             return true;
+        } else if(mIsTouchInAddBall) {
+            addSignArea();
+            return true;
         } else if(mIsTouchInSignArea) {
             setSignAreaInFocus();
             return true;
@@ -188,18 +191,6 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
             cleanSignAreaInFocus();
         }
         return false;
-    }
-
-    private void cleanSignAreaInFocus() {
-        mTagCurrentTouchSignArea = "";
-        mIsTouchInDelBall = false;
-        mIsTouchInSignArea = false;
-        pdfView.invalidate();
-    }
-
-    private void setSignAreaInFocus() {
-        mIsTouchInSignArea = true;
-        pdfView.invalidate();
     }
 
     @Override
@@ -219,12 +210,6 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
             pdfView.loadPageByOffset();
         }
         return true;
-    }
-
-    private void deleteSignArea() {
-        pdfView.getMapSignAreas().remove(mTagCurrentTouchSignArea);
-        pdfView.invalidate();
-        mIsTouchInDelBall = false;
     }
 
     private void onScrollEnd(MotionEvent event) {
@@ -359,8 +344,22 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     // 20201203 JLin add
     private HashMap<String, SignArea> mMapSignAreas = new HashMap<>();
     private String mTagCurrentTouchSignArea = "";
-    private boolean mIsTouchInSignArea = false;
+    private boolean mIsTouchInAddBall = false;
     private boolean mIsTouchInDelBall = false;
+    private boolean mIsTouchInSignArea = false;
+
+    private void cleanSignAreaInFocus() {
+        mTagCurrentTouchSignArea = "";
+        mIsTouchInDelBall = false;
+        mIsTouchInAddBall = false;
+        mIsTouchInSignArea = false;
+        pdfView.invalidate();
+    }
+
+    private void setSignAreaInFocus() {
+        mIsTouchInSignArea = true;
+        pdfView.invalidate();
+    }
 
     private void moveSignArea(float distanceX, float distanceY) {
         SignArea area = mMapSignAreas.get(mTagCurrentTouchSignArea);
@@ -449,6 +448,9 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
             if(isInDelBall(area.getDelBall(), eventXOffset, eventYOffset)) {
                 mIsTouchInDelBall = true;
                 return true;
+            } else if(isInAddBall(area.getAddBall(), eventXOffset, eventYOffset)) {
+                mIsTouchInAddBall = true;
+                return true;
             } else if (isInAnSignArea(area, pagesOffset, eventXOffset, eventYOffset)) {
                 mIsTouchInSignArea = true;
                 return true;
@@ -467,6 +469,30 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         return eventX > ballLeft && eventX < ballRight && eventY > ballTop && eventY < ballBottom;
     }
 
+    private void deleteSignArea() {
+        pdfView.getMapSignAreas().remove(mTagCurrentTouchSignArea);
+        pdfView.invalidate();
+        mIsTouchInDelBall = false;
+    }
+
+    private boolean isInAddBall(AddBall ball, float eventX, float eventY) {
+        float ballLeft = ball.getLeft();
+        float ballRight = ball.getRight();
+        float ballTop = ball.getTop();
+        float ballBottom = ball.getBottom();
+
+        return eventX > ballLeft && eventX < ballRight && eventY > ballTop && eventY < ballBottom;
+    }
+
+    private void addSignArea() {
+        HashMap<String, SignArea> currentPageSignAreas = pdfView.getMapSignAreas();
+        SignArea area = currentPageSignAreas.get(mTagCurrentTouchSignArea);
+        currentPageSignAreas.put(String.valueOf(System.currentTimeMillis()), new SignArea(area.getLeft() + 50,
+                area.getTop() + 50, area.getRight() + 50, area.getBottom() + 50));
+        pdfView.invalidate();
+        mIsTouchInAddBall = false;
+    }
+
     private boolean isInAnSignArea(SignArea area, int[] pagesOffset, float eventX, float eventY) {
         float areaLeft = pagesOffset[0] + area.getLeft() * pdfView.getZoom();
         float areaRight = pagesOffset[0] + area.getRight() * pdfView.getZoom();
@@ -475,7 +501,6 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
         return eventX > areaLeft && eventX < areaRight && eventY > areaTop && eventY < areaBottom;
     }
-
 
     public String getCurrentTouchSignAreaTag() {
         return mTagCurrentTouchSignArea;
