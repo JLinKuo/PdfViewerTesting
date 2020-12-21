@@ -165,7 +165,9 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     @Override
     public boolean onDown(MotionEvent e) {
         animationManager.stopFling();
-        chkTouchInSignArea(e);
+        if(!chkTouchInSignArea(e)) {
+            cleanSignAreaInFocus();
+        }
         return true;
     }
 
@@ -179,8 +181,25 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         if(mIsTouchInDelBall) {
             deleteSignArea();
             return true;
+        } else if(mIsTouchInSignArea) {
+            setSignAreaInFocus();
+            return true;
+        } else {
+            cleanSignAreaInFocus();
         }
         return false;
+    }
+
+    private void cleanSignAreaInFocus() {
+        mTagCurrentTouchSignArea = "";
+        mIsTouchInDelBall = false;
+        mIsTouchInSignArea = false;
+        pdfView.invalidate();
+    }
+
+    private void setSignAreaInFocus() {
+        mIsTouchInSignArea = true;
+        pdfView.invalidate();
     }
 
     @Override
@@ -381,35 +400,58 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
         if(mMapSignAreas == null) return false;
 
-        // 表示手指沒有觸碰到任何的簽名框
-        mIsTouchInDelBall = false;
-        mIsTouchInSignArea = false;
-        mTagCurrentTouchSignArea = "";
-
         if(mMapSignAreas.size() != 0) {
-            Iterator<String> mapIterator = mMapSignAreas.keySet().iterator();
-            while(mapIterator.hasNext()) {
-                String key = mapIterator.next();
+            if (isTouchInFocusSignArea(event)) {
+                return true;
+            } else if (isTouchInAllOtherSignArea(event)) {
+                return true;
+            }
+        }
 
-                SignArea area = mMapSignAreas.get(key);
-                if(area != null) {
-                    int[] pagesOffset = pdfView.getPreviousPagesOffset();
+        return false;
+    }
 
-                    float xOffset = pdfView.getCurrentXOffset();
-                    float yOffset = pdfView.getCurrentYOffset();
-                    float eventXOffset = event.getX() - xOffset;
-                    float eventYOffset = event.getY() - yOffset;
+    private boolean isTouchInAllOtherSignArea(MotionEvent event) {
+        Iterator<String> mapIterator = mMapSignAreas.keySet().iterator();
+        while (mapIterator.hasNext()) {
+            String key = mapIterator.next();
 
-                    if(isInDelBall(area.getDelBall(), eventXOffset, eventYOffset)) {
-                        mIsTouchInDelBall = true;
-                        mTagCurrentTouchSignArea = key;
-                      return true;
-                    } else if (isInAnSignArea(area, pagesOffset, eventXOffset, eventYOffset)) {
-                        mIsTouchInSignArea = true;
-                        mTagCurrentTouchSignArea = key;
-                        return true;
-                    }
+            SignArea area = mMapSignAreas.get(key);
+            if (area != null) {
+                int[] pagesOffset = pdfView.getPreviousPagesOffset();
+
+                float xOffset = pdfView.getCurrentXOffset();
+                float yOffset = pdfView.getCurrentYOffset();
+                float eventXOffset = event.getX() - xOffset;
+                float eventYOffset = event.getY() - yOffset;
+
+                if (isInAnSignArea(area, pagesOffset, eventXOffset, eventYOffset)) {
+                    mIsTouchInSignArea = true;
+                    mTagCurrentTouchSignArea = key;
+                    return true;
                 }
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isTouchInFocusSignArea(MotionEvent event) {
+        SignArea area = mMapSignAreas.get(mTagCurrentTouchSignArea);
+        if(area != null) {
+            int[] pagesOffset = pdfView.getPreviousPagesOffset();
+
+            float xOffset = pdfView.getCurrentXOffset();
+            float yOffset = pdfView.getCurrentYOffset();
+            float eventXOffset = event.getX() - xOffset;
+            float eventYOffset = event.getY() - yOffset;
+
+            if(isInDelBall(area.getDelBall(), eventXOffset, eventYOffset)) {
+                mIsTouchInDelBall = true;
+                return true;
+            } else if (isInAnSignArea(area, pagesOffset, eventXOffset, eventYOffset)) {
+                mIsTouchInSignArea = true;
+                return true;
             }
         }
 
@@ -432,5 +474,10 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         float areaBottom = pagesOffset[1] + area.getBottom() * pdfView.getZoom();
 
         return eventX > areaLeft && eventX < areaRight && eventY > areaTop && eventY < areaBottom;
+    }
+
+
+    public String getCurrentTouchSignAreaTag() {
+        return mTagCurrentTouchSignArea;
     }
 }

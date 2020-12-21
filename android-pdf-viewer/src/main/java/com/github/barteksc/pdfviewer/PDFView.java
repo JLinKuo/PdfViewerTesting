@@ -648,7 +648,8 @@ public class PDFView extends RelativeLayout {
         drawWithListener(canvas, currentPage, callbacks.getOnDraw());
 
         //20201201: JLin Added
-        drawSignAreas(canvas, zoom);
+        drawAllOtherSignAreas(canvas);
+        drawInFocusSignArea(canvas);
         //
 
         // Restores the canvas position
@@ -1575,45 +1576,76 @@ public class PDFView extends RelativeLayout {
     //20201201: JLin Added
     private HashMap<Integer, HashMap<String, SignArea>> mMapPageSignAreas = new HashMap<>();
 
-    private void drawSignAreas(Canvas canvas, float zoom) {
+    private void drawAllOtherSignAreas(Canvas canvas) {
         HashMap<String, SignArea> mapSignAreas = mMapPageSignAreas.get(currentPage);
         if(mapSignAreas != null && mapSignAreas.size() != 0) {
-            Paint outlinePaint = new Paint();
-            outlinePaint.setStyle(Style.STROKE);
-            outlinePaint.setStrokeWidth(8);
-            outlinePaint.setAntiAlias(true);
-            outlinePaint.setColor(Color.RED);
+            Paint outlinePaint = getSignAreaOutlinePaint();
+            Paint bgPaint = getSignAreaBackGroundPaint();
 
-            Paint bgPaint = new Paint();
-            bgPaint.setStyle(Style.FILL);
-            int alphaRed = Color.argb(127, 255, 0, 0);
-            bgPaint.setColor(alphaRed);
+            int[] pagesOffset = getPreviousPagesOffset();
+            float[] spaceOffset = getEachPageSpaceOffset();
 
             Iterator<String> mapIterator = mapSignAreas.keySet().iterator();
             while(mapIterator.hasNext()) {
                 String key = mapIterator.next();
                 SignArea area = mapSignAreas.get(key);
                 if(area != null) {
-                    int[] pagesOffset = getPreviousPagesOffset();
-                    float[] spaceOffset = getEachPageSpaceOffset();
+                    if(dragPinchManager.getCurrentTouchSignAreaTag().equals(key)) {
+                        continue;
+                    }
 
                     float[] areaSize = getAreaSize(area, pagesOffset, spaceOffset);
-                    // 畫出簽名框的背景
-                    canvas.drawRect(areaSize[0], areaSize[2], areaSize[1], areaSize[3], bgPaint);
-                    // 畫出簽名框的外框
-                    canvas.drawRect(areaSize[0], areaSize[2], areaSize[1], areaSize[3], outlinePaint);
-                    // 畫出刪除簽名框的功能按鈕
-                    Bitmap delBitmap = drawable2Bitmap(ResourcesCompat.getDrawable(
-                            getResources(), R.drawable.ic_icon_delete_red_bg, null));
-                    float[] delBallSize = setDelBallSize(area.getDelBall(), delBitmap.getWidth(),
-                                          delBitmap.getHeight(), areaSize);
-                    canvas.drawBitmap(delBitmap, delBallSize[0], delBallSize[2], new Paint());
-                    delBitmap.recycle();
-                    // todo: 畫出新增簽名框的功能按鈕
-                    // todo: 畫出放大縮小簽名框的功能按鈕
+                    // 畫出一個簽名框
+                    drawAnSignArea(canvas, areaSize, outlinePaint, bgPaint);
                 }
             }
         }
+    }
+
+    private void drawInFocusSignArea(Canvas canvas) {
+        HashMap<String, SignArea> mapSignAreas = mMapPageSignAreas.get(currentPage);
+        if(mapSignAreas != null && mapSignAreas.size() != 0) {
+            SignArea area = mapSignAreas.get(dragPinchManager.getCurrentTouchSignAreaTag());
+
+            if(area != null) {
+                Paint outlinePaint = getSignAreaOutlinePaint();
+                Paint bgPaint = getSignAreaBackGroundPaint();
+                int[] pagesOffset = getPreviousPagesOffset();
+                float[] spaceOffset = getEachPageSpaceOffset();
+                float[] areaSize = getAreaSize(area, pagesOffset, spaceOffset);
+
+                // 畫出一個簽名框
+                drawAnSignArea(canvas, areaSize, outlinePaint, bgPaint);
+                // 畫出刪除簽名框的功能按鈕
+                drawAnDelBall(canvas, area, areaSize);
+                // todo: 畫出新增簽名框的功能按鈕
+                // todo: 畫出放大縮小簽名框的功能按鈕
+            }
+        }
+    }
+
+    private Paint getSignAreaBackGroundPaint() {
+        Paint paint = new Paint();
+        paint.setStyle(Style.FILL);
+        int alphaRed = Color.argb(127, 255, 0, 0);
+        paint.setColor(alphaRed);
+        return paint;
+    }
+
+    private Paint getSignAreaOutlinePaint() {
+        Paint paint = new Paint();
+        paint.setStyle(Style.STROKE);
+        paint.setStrokeWidth(8);
+        paint.setAntiAlias(true);
+        paint.setColor(Color.RED);
+        return paint;
+    }
+
+    private void drawAnSignArea(Canvas canvas, float[] areaSize, Paint outlinePaint, Paint bgPaint) {
+        // 畫出簽名框的背景
+        canvas.drawRect(areaSize[0], areaSize[2], areaSize[1], areaSize[3], bgPaint);
+        // 畫出簽名框的外框
+        canvas.drawRect(areaSize[0], areaSize[2], areaSize[1], areaSize[3], outlinePaint);
     }
 
     private float[] getAreaSize(SignArea area, int[] pagesOffset, float[] spaceOffset) {
@@ -1623,6 +1655,14 @@ public class PDFView extends RelativeLayout {
                 pagesOffset[1] + area.getTop() * zoom + spaceOffset[1],         // Top
                 pagesOffset[1] + area.getBottom() * zoom + spaceOffset[1]       // Bottom
         };
+    }
+    private void drawAnDelBall(Canvas canvas, SignArea area, float[] areaSize) {
+        Bitmap delBitmap = drawable2Bitmap(ResourcesCompat.getDrawable(
+                getResources(), R.drawable.ic_icon_delete_red_bg, null));
+        float[] delBallSize = setDelBallSize(area.getDelBall(), delBitmap.getWidth(),
+                delBitmap.getHeight(), areaSize);
+        canvas.drawBitmap(delBitmap, delBallSize[0], delBallSize[2], new Paint());
+        delBitmap.recycle();
     }
     private float[] setDelBallSize(DelBall ball, int width, int height, float[] areaSize) {
         float[] ballSize = new float[] { areaSize[1] - width / 2F,              // Left
@@ -1637,9 +1677,6 @@ public class PDFView extends RelativeLayout {
     }
     public HashMap<Integer, HashMap<String, SignArea>> getMapPageSignAreas() {
         return mMapPageSignAreas;
-    }
-    public void updateMapPageSignAreas(HashMap<Integer, HashMap<String, SignArea>> map) {
-        this.mMapPageSignAreas = map;
     }
     public HashMap<String, SignArea> getCurrentPageMapSignAreas() {
         return mMapPageSignAreas.get(currentPage);
