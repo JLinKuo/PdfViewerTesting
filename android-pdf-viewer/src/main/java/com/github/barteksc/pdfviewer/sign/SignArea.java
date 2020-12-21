@@ -5,6 +5,7 @@ public class SignArea {
     private int top = -1;
     private int right = -1;
     private int bottom = -1;
+    private AddBall addBall = new AddBall();
     private DelBall delBall = new DelBall();
 
     public SignArea(int left, int top, int right, int bottom) {
@@ -34,7 +35,9 @@ public class SignArea {
         this.bottom = bottom;
         return this;
     }
+    public AddBall getAddBall() { return addBall; }
     public DelBall getDelBall() { return delBall; }
 
+    public class AddBall extends FunctionBall {}
     public class DelBall extends FunctionBall {}
 }

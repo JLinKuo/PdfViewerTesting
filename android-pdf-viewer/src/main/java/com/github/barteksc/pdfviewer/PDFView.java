@@ -1616,9 +1616,10 @@ public class PDFView extends RelativeLayout {
 
                 // 畫出一個簽名框
                 drawAnSignArea(canvas, areaSize, outlinePaint, bgPaint);
+                // 畫出新增簽名框的功能按鈕
+                drawAnAddBall(canvas, area, areaSize);
                 // 畫出刪除簽名框的功能按鈕
                 drawAnDelBall(canvas, area, areaSize);
-                // todo: 畫出新增簽名框的功能按鈕
                 // todo: 畫出放大縮小簽名框的功能按鈕
             }
         }
@@ -1655,6 +1656,22 @@ public class PDFView extends RelativeLayout {
                 pagesOffset[1] + area.getTop() * zoom + spaceOffset[1],         // Top
                 pagesOffset[1] + area.getBottom() * zoom + spaceOffset[1]       // Bottom
         };
+    }
+    private void drawAnAddBall(Canvas canvas, SignArea area, float[] areaSize) {
+        Bitmap addBitmap = drawable2Bitmap(ResourcesCompat.getDrawable(
+                getResources(), R.drawable.ic_icon_add_yellow_bg, null));
+        float[] addBallSize = setAddBallSize(area.getAddBall(), addBitmap.getWidth(),
+                addBitmap.getHeight(), areaSize);
+        canvas.drawBitmap(addBitmap, addBallSize[0], addBallSize[2], new Paint());
+        addBitmap.recycle();
+    }
+    private float[] setAddBallSize(AddBall ball, int width, int height, float[] areaSize) {
+        float[] ballSize = new float[] { areaSize[0] - width / 2F,              // Left
+                areaSize[0] + width / 2F,              // Right
+                areaSize[2] - height / 2F,             // Top
+                areaSize[2] + height / 2F };           // Bottom
+        ball.setLeft(ballSize[0]).setRight(ballSize[1]).setTop(ballSize[2]).setBottom(ballSize[3]);
+        return ballSize;
     }
     private void drawAnDelBall(Canvas canvas, SignArea area, float[] areaSize) {
         Bitmap delBitmap = drawable2Bitmap(ResourcesCompat.getDrawable(
