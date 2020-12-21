@@ -1616,11 +1616,12 @@ public class PDFView extends RelativeLayout {
 
                 // 畫出一個簽名框
                 drawAnSignArea(canvas, areaSize, outlinePaint, bgPaint);
+                // 畫出放大縮小簽名框的功能按鈕
+                drawAnZoomBall(canvas, area, areaSize);
                 // 畫出新增簽名框的功能按鈕
                 drawAnAddBall(canvas, area, areaSize);
                 // 畫出刪除簽名框的功能按鈕
                 drawAnDelBall(canvas, area, areaSize);
-                // todo: 畫出放大縮小簽名框的功能按鈕
             }
         }
     }
@@ -1657,6 +1658,22 @@ public class PDFView extends RelativeLayout {
                 pagesOffset[1] + area.getBottom() * zoom + spaceOffset[1]       // Bottom
         };
     }
+    private void drawAnZoomBall(Canvas canvas, SignArea area, float[] areaSize) {
+        Bitmap zoomBitmap = drawable2Bitmap(ResourcesCompat.getDrawable(
+                getResources(), R.drawable.ic_icon_zoom_yellow_bg, null));
+        float[] zoomBallSize = setZoomBallSize(area.getZoomBall(), zoomBitmap.getWidth(),
+                zoomBitmap.getHeight(), areaSize);
+        canvas.drawBitmap(zoomBitmap, zoomBallSize[0], zoomBallSize[2], new Paint());
+        zoomBitmap.recycle();
+    }
+    private float[] setZoomBallSize(ZoomBall ball, int width, int height, float[] areaSize) {
+        float[] ballSize = new float[] { areaSize[1] - width / 2F,              // Left
+                                         areaSize[1] + width / 2F,              // Right
+                                         areaSize[3] - height / 2F,             // Top
+                                         areaSize[3] + height / 2F };           // Bottom
+        ball.setLeft(ballSize[0]).setRight(ballSize[1]).setTop(ballSize[2]).setBottom(ballSize[3]);
+        return ballSize;
+    }
     private void drawAnAddBall(Canvas canvas, SignArea area, float[] areaSize) {
         Bitmap addBitmap = drawable2Bitmap(ResourcesCompat.getDrawable(
                 getResources(), R.drawable.ic_icon_add_yellow_bg, null));
@@ -1667,9 +1684,9 @@ public class PDFView extends RelativeLayout {
     }
     private float[] setAddBallSize(AddBall ball, int width, int height, float[] areaSize) {
         float[] ballSize = new float[] { areaSize[0] - width / 2F,              // Left
-                areaSize[0] + width / 2F,              // Right
-                areaSize[2] - height / 2F,             // Top
-                areaSize[2] + height / 2F };           // Bottom
+                                         areaSize[0] + width / 2F,              // Right
+                                         areaSize[2] - height / 2F,             // Top
+                                         areaSize[2] + height / 2F };           // Bottom
         ball.setLeft(ballSize[0]).setRight(ballSize[1]).setTop(ballSize[2]).setBottom(ballSize[3]);
         return ballSize;
     }

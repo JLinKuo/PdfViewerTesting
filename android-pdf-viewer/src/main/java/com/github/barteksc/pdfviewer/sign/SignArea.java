@@ -5,6 +5,7 @@ public class SignArea {
     private int top = -1;
     private int right = -1;
     private int bottom = -1;
+    private ZoomBall zoomBall = new ZoomBall();
     private AddBall addBall = new AddBall();
     private DelBall delBall = new DelBall();
 
@@ -35,9 +36,11 @@ public class SignArea {
         this.bottom = bottom;
         return this;
     }
+    public ZoomBall getZoomBall() { return zoomBall; }
     public AddBall getAddBall() { return addBall; }
     public DelBall getDelBall() { return delBall; }
 
+    public class ZoomBall extends FunctionBall {}
     public class AddBall extends FunctionBall {}
     public class DelBall extends FunctionBall {}
 }
