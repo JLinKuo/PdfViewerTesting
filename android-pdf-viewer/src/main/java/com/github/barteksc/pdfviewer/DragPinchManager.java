@@ -24,8 +24,8 @@ import android.view.View;
 
 import com.github.barteksc.pdfviewer.model.LinkTapEvent;
 import com.github.barteksc.pdfviewer.scroll.ScrollHandle;
+import com.github.barteksc.pdfviewer.sign.FunctionBall;
 import com.github.barteksc.pdfviewer.sign.SignArea;
-import com.github.barteksc.pdfviewer.sign.SignArea.*;
 import com.github.barteksc.pdfviewer.util.SnapEdge;
 import com.shockwave.pdfium.PdfDocument;
 import com.shockwave.pdfium.util.SizeF;
@@ -465,13 +465,13 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
             float eventXOffset = event.getX() - xOffset;
             float eventYOffset = event.getY() - yOffset;
 
-            if(isInDelBall(area.getDelBall(), eventXOffset, eventYOffset)) {
+            if(isInBall(area.getDelBall(), eventXOffset, eventYOffset)) {
                 mIsTouchInDelBall = true;
                 return true;
-            } else if(isInAddBall(area.getAddBall(), eventXOffset, eventYOffset)) {
+            } else if(isInBall(area.getAddBall(), eventXOffset, eventYOffset)) {
                 mIsTouchInAddBall = true;
                 return true;
-            }  else if(isInZoomBall(area.getZoomBall(), eventXOffset, eventYOffset)) {
+            }  else if(isInBall(area.getZoomBall(), eventXOffset, eventYOffset)) {
                 mIsTouchInZoomBall = true;
                 return true;
             } else if (isInAnSignArea(area, pagesOffset, eventXOffset, eventYOffset)) {
@@ -483,28 +483,10 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         return false;
     }
 
-    private boolean isInDelBall(DelBall ball, float eventX, float eventY) {
-        float ballLeft = ball.getLeft();
-        float ballRight = ball.getRight();
-        float ballTop = ball.getTop();
-        float ballBottom = ball.getBottom();
-
-        return eventX > ballLeft && eventX < ballRight && eventY > ballTop && eventY < ballBottom;
-    }
-
     private void deleteSignArea() {
         pdfView.getMapSignAreas().remove(mTagCurrentTouchSignArea);
         pdfView.invalidate();
         mIsTouchInDelBall = false;
-    }
-
-    private boolean isInAddBall(AddBall ball, float eventX, float eventY) {
-        float ballLeft = ball.getLeft();
-        float ballRight = ball.getRight();
-        float ballTop = ball.getTop();
-        float ballBottom = ball.getBottom();
-
-        return eventX > ballLeft && eventX < ballRight && eventY > ballTop && eventY < ballBottom;
     }
 
     private void addSignArea() {
@@ -514,15 +496,6 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
                 area.getTop() + 50, area.getRight() + 50, area.getBottom() + 50));
         pdfView.invalidate();
         mIsTouchInAddBall = false;
-    }
-
-    private boolean isInZoomBall(ZoomBall ball, float eventX, float eventY) {
-        float ballLeft = ball.getLeft();
-        float ballRight = ball.getRight();
-        float ballTop = ball.getTop();
-        float ballBottom = ball.getBottom();
-
-        return eventX > ballLeft && eventX < ballRight && eventY > ballTop && eventY < ballBottom;
     }
 
     private void zoomSignArea(float distanceX, float distanceY) {
@@ -560,6 +533,15 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         float areaBottom = pagesOffset[1] + area.getBottom() * pdfView.getZoom();
 
         return eventX > areaLeft && eventX < areaRight && eventY > areaTop && eventY < areaBottom;
+    }
+
+    private boolean isInBall(FunctionBall ball, float eventX, float eventY) {
+        float ballLeft = ball.getLeft();
+        float ballRight = ball.getRight();
+        float ballTop = ball.getTop();
+        float ballBottom = ball.getBottom();
+
+        return eventX > ballLeft && eventX < ballRight && eventY > ballTop && eventY < ballBottom;
     }
 
     public String getCurrentTouchSignAreaTag() {
