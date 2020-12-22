@@ -196,7 +196,13 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
         // 20201204 Jin Added
-        if(mIsTouchInSignArea) {
+        if(mIsTouchInZoomBall) {
+            if(distanceX != 0 && distanceY != 0) {
+                zoomSignArea(distanceX, distanceY);
+            }
+
+            return true;
+        } else if(mIsTouchInSignArea) {
             moveSignArea(distanceX, distanceY);
             return true;
         }
@@ -320,7 +326,11 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         retVal = gestureDetector.onTouchEvent(event) || retVal;
 
         if (event.getAction() == MotionEvent.ACTION_UP) {
-            if (scrolling) {
+            // 20201222 JLin Added
+            if(mIsTouchInZoomBall) {
+                mIsTouchInZoomBall = false;
+            //
+            } else if (scrolling) {
                 scrolling = false;
                 onScrollEnd(event);
             }
@@ -342,8 +352,12 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     }
 
     // 20201203 JLin add
+    private int RATIO_SIGN_AREA_WIDTH_HEIGHT = 2;
+    private int MIN_WIDTH_SIGN_AREA = 100;
+    private int MIN_HEIGHT_SIGN_AREA = MIN_WIDTH_SIGN_AREA / RATIO_SIGN_AREA_WIDTH_HEIGHT;
     private HashMap<String, SignArea> mMapSignAreas = new HashMap<>();
     private String mTagCurrentTouchSignArea = "";
+    private boolean mIsTouchInZoomBall = false;
     private boolean mIsTouchInAddBall = false;
     private boolean mIsTouchInDelBall = false;
     private boolean mIsTouchInSignArea = false;
@@ -352,6 +366,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         mTagCurrentTouchSignArea = "";
         mIsTouchInDelBall = false;
         mIsTouchInAddBall = false;
+        mIsTouchInZoomBall = false;
         mIsTouchInSignArea = false;
         pdfView.invalidate();
     }
@@ -400,6 +415,11 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         if(mMapSignAreas == null) return false;
 
         if(mMapSignAreas.size() != 0) {
+            // 取消三個功能圓球的touch flag
+            mIsTouchInZoomBall = false;
+            mIsTouchInAddBall = false;
+            mIsTouchInDelBall = false;
+
             if (isTouchInFocusSignArea(event)) {
                 return true;
             } else if (isTouchInAllOtherSignArea(event)) {
@@ -451,6 +471,9 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
             } else if(isInAddBall(area.getAddBall(), eventXOffset, eventYOffset)) {
                 mIsTouchInAddBall = true;
                 return true;
+            }  else if(isInZoomBall(area.getZoomBall(), eventXOffset, eventYOffset)) {
+                mIsTouchInZoomBall = true;
+                return true;
             } else if (isInAnSignArea(area, pagesOffset, eventXOffset, eventYOffset)) {
                 mIsTouchInSignArea = true;
                 return true;
@@ -491,6 +514,43 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
                 area.getTop() + 50, area.getRight() + 50, area.getBottom() + 50));
         pdfView.invalidate();
         mIsTouchInAddBall = false;
+    }
+
+    private boolean isInZoomBall(ZoomBall ball, float eventX, float eventY) {
+        float ballLeft = ball.getLeft();
+        float ballRight = ball.getRight();
+        float ballTop = ball.getTop();
+        float ballBottom = ball.getBottom();
+
+        return eventX > ballLeft && eventX < ballRight && eventY > ballTop && eventY < ballBottom;
+    }
+
+    private void zoomSignArea(float distanceX, float distanceY) {
+        if(distanceX * distanceY > 0) {                 // 表示手勢滑動是往左上或右下
+            SignArea area = pdfView.getMapSignAreas().get(mTagCurrentTouchSignArea);
+            if (area != null) {
+                int areaWidth = area.getRight() - area.getLeft();
+                int areaHeight = area.getBottom() - area.getTop();
+                double areaDiagonal = Math.sqrt(Math.pow(areaWidth, 2) + Math.pow(areaHeight, 2));
+                double fingerMove = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
+                double newDiagonal = areaDiagonal;
+                if(distanceX < 0 && distanceX < 0) {     // 負數表示往右下滑動，正數表示往左上滑動
+                    newDiagonal += fingerMove;
+                } else {
+                    newDiagonal -= fingerMove;
+                }
+                double ratio = newDiagonal / areaDiagonal;
+
+                int newWidth = (int) Math.max(Math.round(areaWidth * ratio), MIN_WIDTH_SIGN_AREA);
+                int newHeight = (int) Math.max(Math.round(areaHeight * ratio), MIN_HEIGHT_SIGN_AREA);
+
+                area.setLeft(area.getLeft()).
+                        setTop(area.getTop()).
+                        setRight(area.getLeft() + newWidth).
+                        setBottom(area.getTop() + newHeight);
+                pdfView.invalidate();
+            }
+        }
     }
 
     private boolean isInAnSignArea(SignArea area, int[] pagesOffset, float eventX, float eventY) {
