@@ -3,13 +3,16 @@ package com.github.barteksc.pdfviewer.sign;
 import android.graphics.Rect;
 
 public class SignArea {
+    private String DEFAULT_DATE_FORMAT = "yyyy/mm/dd";
     private int left = -1;
     private int top = -1;
     private int right = -1;
     private int bottom = -1;
     private String email = "";
+    private String date = DEFAULT_DATE_FORMAT;
 
     private Rect emailRect = new Rect();
+    private Rect dateRect = new Rect();
 
     private ZoomBall zoomBall = new ZoomBall();
     private AddBall addBall = new AddBall();
@@ -27,6 +30,7 @@ public class SignArea {
     public int getRight() { return right; }
     public int getBottom() { return bottom; }
     public String getEmail() { return email; }
+    public String getDate() { return date; }
 
     public SignArea setLeft(int left) {
         this.left = left;
@@ -46,6 +50,7 @@ public class SignArea {
     }
 
     public Rect getEmailRect() { return emailRect; }
+    public Rect getDateRect() { return dateRect; }
 
     public ZoomBall getZoomBall() { return zoomBall; }
     public AddBall getAddBall() { return addBall; }

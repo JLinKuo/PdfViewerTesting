@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun addSignArea(pageIndex: Int, tag: String, left: Int, top: Int, right: Int, bottom: Int) {
         pdfViewer.mapPageSignAreas[pageIndex]?.apply {
-            this[tag] = SignArea(left, top, right, bottom)
+            this[tag] = SignArea("yaerse@gmail.com", left, top, right, bottom)
         }
     }
 

@@ -1651,8 +1651,13 @@ public class PDFView extends RelativeLayout {
         // 畫出簽名框的外框
         canvas.drawRect(areaSize[0], areaSize[2], areaSize[1], areaSize[3], outlinePaint);
         // 畫出 E-MAIL
-        canvas.drawText(area.getEmail(), areaSize[0] + 16, areaSize[2] + area.getEmailRect().height(),
-                        getDrawTextPaint(area.getEmail(), area.getEmailRect()));
+        Paint emailPaint = getDrawTextPaint(area.getEmail(), area.getEmailRect());
+        canvas.drawText(area.getEmail(), areaSize[0] + 16,
+                     areaSize[2] + area.getEmailRect().height(), emailPaint);
+        // 畫出 Date
+        Paint datePaint = getDrawTextPaint(area.getDate(), area.getDateRect());
+        canvas.drawText(area.getDate(), areaSize[1] - area.getDateRect().width() - 40,
+                     areaSize[3] + area.getDateRect().height(), datePaint);
     }
 
     private Paint getDrawTextPaint(String text, Rect textBounds) {
