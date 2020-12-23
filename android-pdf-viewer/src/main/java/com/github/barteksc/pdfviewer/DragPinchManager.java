@@ -492,7 +492,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     private void addSignArea() {
         HashMap<String, SignArea> currentPageSignAreas = pdfView.getMapSignAreas();
         SignArea area = currentPageSignAreas.get(mTagCurrentTouchSignArea);
-        currentPageSignAreas.put(String.valueOf(System.currentTimeMillis()), new SignArea(area.getLeft() + 50,
+        currentPageSignAreas.put(String.valueOf(System.currentTimeMillis()), new SignArea("yaerse@yahoo.com.tw", area.getLeft() + 50,
                 area.getTop() + 50, area.getRight() + 50, area.getBottom() + 50));
         pdfView.invalidate();
         mIsTouchInAddBall = false;

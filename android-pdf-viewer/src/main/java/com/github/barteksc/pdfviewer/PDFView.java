@@ -1574,6 +1574,7 @@ public class PDFView extends RelativeLayout {
     }
 
     //20201201: JLin Added
+    private int DEFAULT_TEXT_SIZE = 16;
     private HashMap<Integer, HashMap<String, SignArea>> mMapPageSignAreas = new HashMap<>();
 
     private void drawAllOtherSignAreas(Canvas canvas) {
@@ -1596,7 +1597,7 @@ public class PDFView extends RelativeLayout {
 
                     float[] areaSize = getAreaSize(area, pagesOffset, spaceOffset);
                     // 畫出一個簽名框
-                    drawAnSignArea(canvas, areaSize, outlinePaint, bgPaint);
+                    drawAnSignArea(canvas, area, areaSize, outlinePaint, bgPaint);
                 }
             }
         }
@@ -1615,7 +1616,7 @@ public class PDFView extends RelativeLayout {
                 float[] areaSize = getAreaSize(area, pagesOffset, spaceOffset);
 
                 // 畫出一個簽名框
-                drawAnSignArea(canvas, areaSize, outlinePaint, bgPaint);
+                drawAnSignArea(canvas, area, areaSize, outlinePaint, bgPaint);
                 // 畫出放大縮小簽名框的功能按鈕
                 drawAnZoomBall(canvas, area, areaSize);
                 // 畫出新增簽名框的功能按鈕
@@ -1643,11 +1644,24 @@ public class PDFView extends RelativeLayout {
         return paint;
     }
 
-    private void drawAnSignArea(Canvas canvas, float[] areaSize, Paint outlinePaint, Paint bgPaint) {
+    private void drawAnSignArea(Canvas canvas, SignArea area, float[] areaSize, Paint outlinePaint,
+                                Paint bgPaint) {
         // 畫出簽名框的背景
         canvas.drawRect(areaSize[0], areaSize[2], areaSize[1], areaSize[3], bgPaint);
         // 畫出簽名框的外框
         canvas.drawRect(areaSize[0], areaSize[2], areaSize[1], areaSize[3], outlinePaint);
+        // 畫出 E-MAIL
+        canvas.drawText(area.getEmail(), areaSize[0] + 16, areaSize[2] + area.getEmailRect().height(),
+                        getDrawTextPaint(area.getEmail(), area.getEmailRect()));
+    }
+
+    private Paint getDrawTextPaint(String text, Rect textBounds) {
+        Paint paint = new Paint();
+        paint.setStyle(Paint.Style.FILL);
+        paint.setTextSize(zoom * DEFAULT_TEXT_SIZE * getResources().getDisplayMetrics().density);
+        paint.getTextBounds(text, 0, text.length(), textBounds);
+
+        return paint;
     }
 
     private float[] getAreaSize(SignArea area, int[] pagesOffset, float[] spaceOffset) {
