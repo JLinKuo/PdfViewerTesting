@@ -17,6 +17,7 @@ public class SignArea {
     private Rect dateRect = new Rect();
 
     private Paint bgPaint = null;
+    private Paint outlinePaint = null;
 
     private ZoomBall zoomBall = new ZoomBall();
     private AddBall addBall = new AddBall();
@@ -70,6 +71,17 @@ public class SignArea {
             bgPaint.setColor(alphaRed);
         }
         return bgPaint;
+    }
+
+    public Paint getOutlinePaint() {
+        if(outlinePaint == null) {
+            outlinePaint = new Paint();
+            outlinePaint.setStyle(Paint.Style.STROKE);
+            outlinePaint.setStrokeWidth(8);
+            outlinePaint.setAntiAlias(true);
+            outlinePaint.setColor(Color.RED);
+        }
+        return outlinePaint;
     }
 
     public class ZoomBall extends FunctionBall {}

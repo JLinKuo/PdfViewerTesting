@@ -1586,8 +1586,6 @@ public class PDFView extends RelativeLayout {
     private void drawAllOtherSignAreas(Canvas canvas) {
         HashMap<String, SignArea> mapSignAreas = mMapPageSignAreas.get(currentPage);
         if(mapSignAreas != null && mapSignAreas.size() != 0) {
-            Paint outlinePaint = getSignAreaOutlinePaint();
-
             int[] pagesOffset = getPreviousPagesOffset();
             float[] spaceOffset = getEachPageSpaceOffset();
 
@@ -1602,7 +1600,7 @@ public class PDFView extends RelativeLayout {
 
                     float[] areaSize = getAreaSize(area, pagesOffset, spaceOffset);
                     // 畫出一個簽名框
-                    drawAnSignArea(canvas, area, areaSize, outlinePaint);
+                    drawAnSignArea(canvas, area, areaSize);
                 }
             }
         }
@@ -1614,13 +1612,12 @@ public class PDFView extends RelativeLayout {
             SignArea area = mapSignAreas.get(dragPinchManager.getCurrentTouchSignAreaTag());
 
             if(area != null) {
-                Paint outlinePaint = getSignAreaOutlinePaint();
                 int[] pagesOffset = getPreviousPagesOffset();
                 float[] spaceOffset = getEachPageSpaceOffset();
                 float[] areaSize = getAreaSize(area, pagesOffset, spaceOffset);
 
                 // 畫出一個簽名框
-                drawAnSignArea(canvas, area, areaSize, outlinePaint);
+                drawAnSignArea(canvas, area, areaSize);
                 // 畫出放大縮小簽名框的功能按鈕
                 drawAnZoomBall(canvas, area, areaSize);
                 // 畫出新增簽名框的功能按鈕
@@ -1631,17 +1628,9 @@ public class PDFView extends RelativeLayout {
         }
     }
 
-    private Paint getSignAreaOutlinePaint() {
-        Paint paint = new Paint();
-        paint.setStyle(Style.STROKE);
-        paint.setStrokeWidth(8);
-        paint.setAntiAlias(true);
-        paint.setColor(Color.RED);
-        return paint;
-    }
-
-    private void drawAnSignArea(Canvas canvas, SignArea area, float[] areaSize, Paint outlinePaint) {
+    private void drawAnSignArea(Canvas canvas, SignArea area, float[] areaSize) {
         Paint bgPaint = area.getBackGroundPaint();
+        Paint outlinePaint = area.getOutlinePaint();
 
         // 畫出簽名框的背景
         canvas.drawRect(areaSize[0], areaSize[2], areaSize[1], areaSize[3], bgPaint);
