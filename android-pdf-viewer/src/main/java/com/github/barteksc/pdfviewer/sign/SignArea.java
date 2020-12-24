@@ -1,5 +1,7 @@
 package com.github.barteksc.pdfviewer.sign;
 
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Rect;
 
 public class SignArea {
@@ -13,6 +15,8 @@ public class SignArea {
 
     private Rect emailRect = new Rect();
     private Rect dateRect = new Rect();
+
+    private Paint bgPaint = null;
 
     private ZoomBall zoomBall = new ZoomBall();
     private AddBall addBall = new AddBall();
@@ -57,6 +61,16 @@ public class SignArea {
     public ZoomBall getZoomBall() { return zoomBall; }
     public AddBall getAddBall() { return addBall; }
     public DelBall getDelBall() { return delBall; }
+
+    public Paint getBackGroundPaint() {
+        if(bgPaint == null) {
+            bgPaint = new Paint();
+            bgPaint.setStyle(Paint.Style.FILL);
+            int alphaRed = Color.argb(127, 255, 0, 0);
+            bgPaint.setColor(alphaRed);
+        }
+        return bgPaint;
+    }
 
     public class ZoomBall extends FunctionBall {}
     public class AddBall extends FunctionBall {}

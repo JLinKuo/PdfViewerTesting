@@ -1587,7 +1587,6 @@ public class PDFView extends RelativeLayout {
         HashMap<String, SignArea> mapSignAreas = mMapPageSignAreas.get(currentPage);
         if(mapSignAreas != null && mapSignAreas.size() != 0) {
             Paint outlinePaint = getSignAreaOutlinePaint();
-            Paint bgPaint = getSignAreaBackGroundPaint();
 
             int[] pagesOffset = getPreviousPagesOffset();
             float[] spaceOffset = getEachPageSpaceOffset();
@@ -1603,7 +1602,7 @@ public class PDFView extends RelativeLayout {
 
                     float[] areaSize = getAreaSize(area, pagesOffset, spaceOffset);
                     // 畫出一個簽名框
-                    drawAnSignArea(canvas, area, areaSize, outlinePaint, bgPaint);
+                    drawAnSignArea(canvas, area, areaSize, outlinePaint);
                 }
             }
         }
@@ -1616,13 +1615,12 @@ public class PDFView extends RelativeLayout {
 
             if(area != null) {
                 Paint outlinePaint = getSignAreaOutlinePaint();
-                Paint bgPaint = getSignAreaBackGroundPaint();
                 int[] pagesOffset = getPreviousPagesOffset();
                 float[] spaceOffset = getEachPageSpaceOffset();
                 float[] areaSize = getAreaSize(area, pagesOffset, spaceOffset);
 
                 // 畫出一個簽名框
-                drawAnSignArea(canvas, area, areaSize, outlinePaint, bgPaint);
+                drawAnSignArea(canvas, area, areaSize, outlinePaint);
                 // 畫出放大縮小簽名框的功能按鈕
                 drawAnZoomBall(canvas, area, areaSize);
                 // 畫出新增簽名框的功能按鈕
@@ -1631,14 +1629,6 @@ public class PDFView extends RelativeLayout {
                 drawAnDelBall(canvas, area, areaSize);
             }
         }
-    }
-
-    private Paint getSignAreaBackGroundPaint() {
-        Paint paint = new Paint();
-        paint.setStyle(Style.FILL);
-        int alphaRed = Color.argb(127, 255, 0, 0);
-        paint.setColor(alphaRed);
-        return paint;
     }
 
     private Paint getSignAreaOutlinePaint() {
@@ -1650,8 +1640,9 @@ public class PDFView extends RelativeLayout {
         return paint;
     }
 
-    private void drawAnSignArea(Canvas canvas, SignArea area, float[] areaSize, Paint outlinePaint,
-                                Paint bgPaint) {
+    private void drawAnSignArea(Canvas canvas, SignArea area, float[] areaSize, Paint outlinePaint) {
+        Paint bgPaint = area.getBackGroundPaint();
+
         // 畫出簽名框的背景
         canvas.drawRect(areaSize[0], areaSize[2], areaSize[1], areaSize[3], bgPaint);
         // 畫出簽名框的外框
