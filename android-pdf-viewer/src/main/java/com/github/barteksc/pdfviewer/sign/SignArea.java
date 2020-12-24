@@ -29,6 +29,8 @@ public class SignArea {
     public int getTop() { return top; }
     public int getRight() { return right; }
     public int getBottom() { return bottom; }
+    public int getWidth() { return right - left; }
+    public int getHeight() { return bottom - top; }
     public String getEmail() { return email; }
     public String getDate() { return date; }
 

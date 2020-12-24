@@ -33,6 +33,8 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.HandlerThread;
+import android.text.TextPaint;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.widget.RelativeLayout;
@@ -78,6 +80,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+
+import static android.text.TextUtils.TruncateAt.*;
 
 /**
  * It supports animations, zoom, cache, and swipe.
@@ -1575,6 +1579,8 @@ public class PDFView extends RelativeLayout {
 
     //20201201: JLin Added
     private int DEFAULT_TEXT_SIZE = 16;
+    private int DEFAULT_EMAIL_MARGIN_START = 16;
+    private int DEFAULT_ELLIPSIZED_END = 40;
     private HashMap<Integer, HashMap<String, SignArea>> mMapPageSignAreas = new HashMap<>();
 
     private void drawAllOtherSignAreas(Canvas canvas) {
@@ -1651,17 +1657,53 @@ public class PDFView extends RelativeLayout {
         // 畫出簽名框的外框
         canvas.drawRect(areaSize[0], areaSize[2], areaSize[1], areaSize[3], outlinePaint);
         // 畫出 E-MAIL
-        Paint emailPaint = getDrawTextPaint(area.getEmail(), area.getEmailRect());
-        canvas.drawText(area.getEmail(), areaSize[0] + 16,
-                     areaSize[2] + area.getEmailRect().height(), emailPaint);
+        drawEMailText(canvas, area, areaSize);
         // 畫出 Date
-        Paint datePaint = getDrawTextPaint(area.getDate(), area.getDateRect());
-        canvas.drawText(area.getDate(), areaSize[1] - area.getDateRect().width() - 40,
-                     areaSize[3] + area.getDateRect().height(), datePaint);
+        drawDateText(canvas, area, areaSize);
+    }
+
+    private void drawEMailText(Canvas canvas, SignArea area, float[] areaSize) {
+        String fullEmail = area.getEmail();
+        Paint emailPaint = getDrawTextPaint(fullEmail, area.getEmailRect());
+        TextPaint textPaint = new TextPaint(emailPaint);
+        String email = getEllipsizedText(textPaint, fullEmail, area.getWidth(), DEFAULT_ELLIPSIZED_END);
+        float x = areaSize[0] + DEFAULT_EMAIL_MARGIN_START;
+        float y = areaSize[2] + area.getEmailRect().height();
+        canvas.drawText(email, x, y, emailPaint);
+    }
+
+    private void drawDateText(Canvas canvas, SignArea area, float[] areaSize) {
+        String fullDate = area.getDate();
+        Paint datePaint = getDrawTextPaint(fullDate, area.getDateRect());
+        TextPaint textPaint = new TextPaint(datePaint);
+        String date = getEllipsizedText(textPaint, fullDate, area.getWidth(), 0);
+
+        float marginEnd = area.getDateRect().width();
+        float stringWidth = textPaint.measureText(fullDate);
+
+        if(stringWidth >= area.getWidth()) {
+            // 日期格式字串的寬度若大於等於簽名框的寬度，則marginEnd的距離就要縮短
+            marginEnd = area.getDateRect().width() - (stringWidth - area.getWidth());
+        }
+
+        float x = (areaSize[0] + area.getWidth() - marginEnd);
+        float y = areaSize[3] + area.getDateRect().height();
+        canvas.drawText(date, x, y, datePaint);
+    }
+
+    private String getEllipsizedText(TextPaint textPaint, String text, int areaWidth,
+                                     int ellipsizedMargin) {
+        String string = text;
+        float stringWidth = textPaint.measureText(text);
+        if(areaWidth < stringWidth) {
+            float available = areaWidth - ellipsizedMargin;
+            string = TextUtils.ellipsize(text, textPaint, available, END).toString();
+        }
+        return string;
     }
 
     private Paint getDrawTextPaint(String text, Rect textBounds) {
-        Paint paint = new Paint();
+        Paint paint = new TextPaint();
         paint.setStyle(Paint.Style.FILL);
         paint.setTextSize(zoom * DEFAULT_TEXT_SIZE * getResources().getDisplayMetrics().density);
         paint.getTextBounds(text, 0, text.length(), textBounds);
