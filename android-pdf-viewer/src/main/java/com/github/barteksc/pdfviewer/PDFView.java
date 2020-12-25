@@ -1597,7 +1597,7 @@ public class PDFView extends RelativeLayout {
 
                     float[] areaSize = getAreaSize(area, pagesOffset, spaceOffset);
                     // 畫出一個簽名框
-                    drawAnSignArea(canvas, area, areaSize);
+                    drawAnSignArea(canvas, area, areaSize, pagesOffset, spaceOffset);
                 }
             }
         }
@@ -1614,7 +1614,7 @@ public class PDFView extends RelativeLayout {
                 float[] areaSize = getAreaSize(area, pagesOffset, spaceOffset);
 
                 // 畫出一個簽名框
-                drawAnSignArea(canvas, area, areaSize);
+                drawAnSignArea(canvas, area, areaSize, pagesOffset, spaceOffset);
                 // 畫出放大縮小簽名框的功能按鈕
                 drawAnZoomBall(canvas, area, areaSize);
                 // 畫出新增簽名框的功能按鈕
@@ -1625,7 +1625,7 @@ public class PDFView extends RelativeLayout {
         }
     }
 
-    private void drawAnSignArea(Canvas canvas, SignArea area, float[] areaSize) {
+    private void drawAnSignArea(Canvas canvas, SignArea area, float[] areaSize, int[] pagesOffset, float[] spaceOffset) {
         Paint bgPaint = area.getBackGroundPaint();
         Paint outlinePaint = area.getOutlinePaint();
 
@@ -1634,21 +1634,25 @@ public class PDFView extends RelativeLayout {
         // 畫出簽名框的外框
         canvas.drawRect(areaSize[0], areaSize[2], areaSize[1], areaSize[3], outlinePaint);
         // 畫出 E-MAIL
-        drawEMailText(canvas, area);
+        drawEMailText(canvas, area, pagesOffset, spaceOffset);
         // 畫出 Date
-        drawDateText(canvas, area);
+        drawDateText(canvas, area, pagesOffset, spaceOffset);
     }
 
-    private void drawEMailText(Canvas canvas, SignArea area) {
+    private void drawEMailText(Canvas canvas, SignArea area, int[] pagesOffset, float[] spaceOffset) {
         String email = area.getEllipsizedEmail(zoom);
         float[] coordinate = area.getEmailCoordinate();
-        canvas.drawText(email, coordinate[0], coordinate[1], area.getEmailPaint());
+        float x = pagesOffset[0] + spaceOffset[0] + coordinate[0];
+        float y = pagesOffset[1] + spaceOffset[1] + coordinate[1];
+        canvas.drawText(email, x, y, area.getEmailPaint());
     }
 
-    private void drawDateText(Canvas canvas, SignArea area) {
+    private void drawDateText(Canvas canvas, SignArea area, int[] pagesOffset, float[] spaceOffset) {
         String date = area.getEllipsizedDate(zoom);
         float[] coordinate = area.getDateCoordinate();
-        canvas.drawText(date, coordinate[0], coordinate[1], area.getDatePaint());
+        float x = pagesOffset[0] + spaceOffset[0] + coordinate[0];
+        float y = pagesOffset[1] + spaceOffset[1] + coordinate[1];
+        canvas.drawText(date, x, y, area.getDatePaint());
     }
 
     private float[] getAreaSize(SignArea area, int[] pagesOffset, float[] spaceOffset) {
