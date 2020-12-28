@@ -17,6 +17,7 @@ package com.github.barteksc.pdfviewer;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorMatrix;
@@ -648,6 +649,7 @@ public class PDFView extends RelativeLayout {
         drawWithListener(canvas, currentPage, callbacks.getOnDraw());
 
         //20201201: JLin Added
+        drawWatermark(canvas);
         drawAllOtherSignAreas(canvas);
         drawInFocusSignArea(canvas);
         //
@@ -1574,8 +1576,30 @@ public class PDFView extends RelativeLayout {
     }
 
     //20201201: JLin Added
+    private boolean mIsShowWatermark = false;
+    private int mWaterMarkBitmap = -1;
+    private Rect mWatermarkSrcRect = null;
+    private RectF mWatermarkDestRect = null;
     private HashMap<Integer, HashMap<String, SignArea>> mMapPageSignAreas = new HashMap<>();
 
+    private void drawWatermark(Canvas canvas) {
+        if(mWaterMarkBitmap > 0 && mIsShowWatermark) {
+            int[] pagesOffset = getPreviousPagesOffset();
+            float[] spaceOffset = getEachPageSpaceOffset();
+
+            SizeF pageSize = getPageSize(getCurrentPage());
+            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), mWaterMarkBitmap);
+            float destLeft = pagesOffset[0] + spaceOffset[0] + (pageSize.getWidth() - bitmap.getWidth()) / 2;
+            float destTop = pagesOffset[1] + spaceOffset[1] + (pageSize.getHeight() - bitmap.getHeight()) / 2;
+
+            mWatermarkSrcRect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+            mWatermarkDestRect = new RectF(destLeft, destTop, destLeft + bitmap.getWidth(),
+                                   destTop + bitmap.getHeight());
+
+            canvas.drawBitmap(bitmap, mWatermarkSrcRect, mWatermarkDestRect, new Paint());
+            bitmap.recycle();
+        }
+    }
     private void drawAllOtherSignAreas(Canvas canvas) {
         HashMap<String, SignArea> mapSignAreas = mMapPageSignAreas.get(currentPage);
         if(mapSignAreas != null && mapSignAreas.size() != 0) {
@@ -1709,6 +1733,10 @@ public class PDFView extends RelativeLayout {
     }
     public HashMap<String, SignArea> getMapSignAreas() {
         return mMapPageSignAreas.get(currentPage);
+    }
+    public void isShowWatermark(boolean isShowWatermark, int watermarkBitmap) {
+        this.mIsShowWatermark = isShowWatermark;
+        this.mWaterMarkBitmap = watermarkBitmap;
     }
     public HashMap<Integer, HashMap<String, SignArea>> getMapPageSignAreas() {
         return mMapPageSignAreas;

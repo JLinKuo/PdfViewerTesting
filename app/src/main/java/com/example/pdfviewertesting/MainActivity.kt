@@ -90,6 +90,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         addWaterMark.setOnClickListener {
+            // 繪製可以放大縮小的浮水印
+            pdfViewer.isShowWatermark(true, R.drawable.ic_launcher_round)
             isDrawWaterMark = true
             pdfViewer.invalidate()
         }
@@ -116,6 +118,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // 透過pdfviewer的listener來畫出不能縮放的浮水印
     private fun addAnWatermark(canvas: Canvas, pageWidth: Float, pageHeight: Float, zoom: Float) {
         val bitmap = BitmapFactory.decodeResource(resources, R.drawable.ic_launcher_round)
         val scaleBitmap = bitmap.scale((bitmap.width * zoom).toInt(), (bitmap.height * zoom).toInt())
@@ -131,7 +134,7 @@ class MainActivity : AppCompatActivity() {
                  .swipeHorizontal(true)
                  .onDraw { canvas, pageWidth, pageHeight, zoom, displayedPage ->
                      if(isDrawWaterMark) {
-                         addAnWatermark(canvas, pageWidth, pageHeight, zoom)
+//                         addAnWatermark(canvas, pageWidth, pageHeight, zoom)
                      }
                  }
                  .onPageChange { page, pageCount ->
