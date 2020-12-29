@@ -5,12 +5,17 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 
 public class WatermarkArea {
+    private String tag = "";
     private int mWatermarkRes = -1;
     private RectF mWatermarkDestRect = null;
     private Paint outlinePaint = null;
 
-    public WatermarkArea(int watermarkRes) { this.mWatermarkRes = watermarkRes; }
+    public WatermarkArea(String tag, int watermarkRes) {
+        this.tag = tag;
+        this.mWatermarkRes = watermarkRes;
+    }
 
+    public String getTag() { return tag; }
     public int getWatermarkRes() { return mWatermarkRes; }
     public RectF getWatermarkDestRect() { return mWatermarkDestRect; }
     public Paint getOutlinePaint() {
