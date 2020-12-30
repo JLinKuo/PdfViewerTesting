@@ -1607,7 +1607,7 @@ public class PDFView extends RelativeLayout {
         RectF watermarkDestRect = new RectF(destLeft, destTop, destLeft + bitmapWidth,
                 destTop + bitmapHeight);
         mWatermarkArea.setWatermarkDestRect(watermarkDestRect);
-        canvas.drawBitmap(bitmap, mWatermarkSrcRect, watermarkDestRect, new Paint());
+        canvas.drawBitmap(bitmap, mWatermarkSrcRect, watermarkDestRect, mWatermarkArea.getBitmapPaint());
         bitmap.recycle();
     }
 

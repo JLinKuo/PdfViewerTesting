@@ -1,6 +1,7 @@
 package com.github.barteksc.pdfviewer.sign;
 
 import android.graphics.Color;
+import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.RectF;
 
@@ -8,6 +9,7 @@ public class WatermarkArea {
     private String tag = "";
     private int mWatermarkRes = -1;
     private RectF mWatermarkDestRect = null;
+    private Paint bitmapPaint = null;
     private Paint outlinePaint = null;
 
     public WatermarkArea(String tag, int watermarkRes) {
@@ -18,13 +20,25 @@ public class WatermarkArea {
     public String getTag() { return tag; }
     public int getWatermarkRes() { return mWatermarkRes; }
     public RectF getWatermarkDestRect() { return mWatermarkDestRect; }
+    public Paint getBitmapPaint() {
+        if(bitmapPaint == null) {
+            bitmapPaint = new Paint();
+            bitmapPaint.setStyle(Paint.Style.STROKE);
+            bitmapPaint.setAntiAlias(true);
+            int alphaRed = Color.argb(127, 0, 0, 0);
+            bitmapPaint.setColor(alphaRed);
+        }
+
+        return bitmapPaint;
+    }
     public Paint getOutlinePaint() {
         if(outlinePaint == null) {
             outlinePaint = new Paint();
             outlinePaint.setStyle(Paint.Style.STROKE);
-            outlinePaint.setStrokeWidth(8);
+            outlinePaint.setStrokeWidth(4);
             outlinePaint.setAntiAlias(true);
             outlinePaint.setColor(Color.RED);
+            outlinePaint.setPathEffect(new DashPathEffect(new float[] {16, 16}, 0));
         }
 
         return outlinePaint;
