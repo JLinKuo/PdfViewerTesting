@@ -7,13 +7,17 @@ import android.graphics.Rect;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import android.text.TextUtils.*;
+import com.github.barteksc.pdfviewer.util.Util;
 import static android.text.TextUtils.TruncateAt.END;
 import static android.text.TextUtils.TruncateAt.START;
 
 public class SignArea {
     private String DEFAULT_DATE_FORMAT = "yyyy/mm/dd";
     private int DEFAULT_TEXT_SIZE = 16;
-    public int DEFAULT_EMAIL_MARGIN_START = 16;
+    private int DEFAULT_EMAIL_START_OFFSET = 8;
+    private int DEFAULT_EMAIL_TOP_OFFSET = 16;
+    private int DEFAULT_DATE_START_OFFSET = 88;
+    private int DEFAULT_DATE_TOP_OFFSET = 16;
     private int DEFAULT_ELLIPSIZED_END = 40;
     private int left = -1;
     private int top = -1;
@@ -69,9 +73,6 @@ public class SignArea {
         return this;
     }
 
-    public Rect getEmailRect() { return emailRect; }
-    public Rect getDateRect() { return dateRect; }
-
     public ZoomBall getZoomBall() { return zoomBall; }
     public AddBall getAddBall() { return addBall; }
     public DelBall getDelBall() { return delBall; }
@@ -100,21 +101,23 @@ public class SignArea {
     public Paint getEmailPaint() { return emailPaint; }
     public Paint getDatePaint() { return datePaint; }
 
-    public float[] getEmailCoordinate() {
-        float[] coordinate = { left + DEFAULT_EMAIL_MARGIN_START, top + emailRect.height() };
+    public float[] getEmailCoordinate(float zoom) {
+        float[] coordinate = { (left + Util.getDp(DEFAULT_EMAIL_START_OFFSET)) * zoom,
+                               (top + Util.getDp(DEFAULT_EMAIL_TOP_OFFSET)) * zoom };
         return coordinate;
     }
 
-    public float[] getDateCoordinate() {
-        float marginEnd = dateRect.width();
+    public float[] getDateCoordinate(float zoom) {
+        float marginEnd = Util.getDp(DEFAULT_DATE_START_OFFSET);
         float stringWidth = dateTextPaint.measureText(date);
 
         if(stringWidth >= getWidth()) {
             // 日期格式字串的寬度若大於等於簽名框的寬度，則marginEnd的距離就要縮短
-            marginEnd = dateRect.width() - (stringWidth - getWidth());
+            marginEnd -= (stringWidth - getWidth());
         }
 
-        float[] coordinate = { right - marginEnd, bottom + dateRect.height() };
+        float[] coordinate = { (right - marginEnd) * zoom ,
+                               (bottom + Util.getDp(DEFAULT_DATE_TOP_OFFSET)) * zoom };
         return coordinate;
     }
 
@@ -145,7 +148,8 @@ public class SignArea {
         } else {
             emailTextPaint.set(emailPaint);
         }
-        return getEllipsizedText(emailTextPaint, email, getWidth(), END, DEFAULT_ELLIPSIZED_END);
+        int width = Math.round(getWidth() * zoom);
+        return getEllipsizedText(emailTextPaint, email, width, END, DEFAULT_ELLIPSIZED_END);
     }
 
     public String getEllipsizedDate(float zoom) {
@@ -155,7 +159,8 @@ public class SignArea {
         } else {
             dateTextPaint.set(datePaint);
         }
-        return getEllipsizedText(dateTextPaint, date, getWidth(), START, 0);
+        int width = Math.round(getWidth() * zoom);
+        return getEllipsizedText(dateTextPaint, date, width, START, 0);
     }
 
     public class ZoomBall extends FunctionBall {}

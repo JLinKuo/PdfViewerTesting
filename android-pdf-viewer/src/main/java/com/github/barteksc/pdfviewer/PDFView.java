@@ -1671,7 +1671,7 @@ public class PDFView extends RelativeLayout {
 
     private void drawEMailText(Canvas canvas, SignArea area, int[] pagesOffset, float[] spaceOffset) {
         String email = area.getEllipsizedEmail(zoom);
-        float[] coordinate = area.getEmailCoordinate();
+        float[] coordinate = area.getEmailCoordinate(zoom);
         float x = pagesOffset[0] + spaceOffset[0] + coordinate[0];
         float y = pagesOffset[1] + spaceOffset[1] + coordinate[1];
         canvas.drawText(email, x, y, area.getEmailPaint());
@@ -1679,7 +1679,7 @@ public class PDFView extends RelativeLayout {
 
     private void drawDateText(Canvas canvas, SignArea area, int[] pagesOffset, float[] spaceOffset) {
         String date = area.getEllipsizedDate(zoom);
-        float[] coordinate = area.getDateCoordinate();
+        float[] coordinate = area.getDateCoordinate(zoom);
         float x = pagesOffset[0] + spaceOffset[0] + coordinate[0];
         float y = pagesOffset[1] + spaceOffset[1] + coordinate[1];
         canvas.drawText(date, x, y, area.getDatePaint());
