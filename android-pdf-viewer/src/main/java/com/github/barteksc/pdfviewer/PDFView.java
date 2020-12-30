@@ -1595,11 +1595,17 @@ public class PDFView extends RelativeLayout {
         float[] spaceOffset = getEachPageSpaceOffset();
         SizeF pageSize = getPageSize(getCurrentPage());
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), mWatermarkArea.getWatermarkRes());
-        float destLeft = pagesOffset[0] + spaceOffset[0] + (pageSize.getWidth() - bitmap.getWidth()) / 2;
-        float destTop = pagesOffset[1] + spaceOffset[1] + (pageSize.getHeight() - bitmap.getHeight()) / 2;
-        Rect mWatermarkSrcRect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
-        RectF watermarkDestRect = new RectF(destLeft, destTop, destLeft + bitmap.getWidth(),
-                                    destTop + bitmap.getHeight());
+        float destLeft = pagesOffset[0] + spaceOffset[0] + (pageSize.getWidth() - bitmap.getWidth()) * zoom / 2;
+        float destTop = pagesOffset[1] + spaceOffset[1] + (pageSize.getHeight() - bitmap.getHeight()) * zoom / 2;
+        int srcLeft = 0;
+        int srcTop = 0;
+        int srcRight = srcLeft + Math.round(bitmap.getWidth());
+        int srcBottom = srcTop + Math.round(bitmap.getHeight());
+        float bitmapWidth = bitmap.getWidth() * zoom;
+        float bitmapHeight = bitmap.getHeight() * zoom;
+        Rect mWatermarkSrcRect = new Rect(srcLeft, srcTop, srcRight, srcBottom);
+        RectF watermarkDestRect = new RectF(destLeft, destTop, destLeft + bitmapWidth,
+                destTop + bitmapHeight);
         mWatermarkArea.setWatermarkDestRect(watermarkDestRect);
         canvas.drawBitmap(bitmap, mWatermarkSrcRect, watermarkDestRect, new Paint());
         bitmap.recycle();
