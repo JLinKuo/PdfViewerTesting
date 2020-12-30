@@ -1620,10 +1620,10 @@ public class PDFView extends RelativeLayout {
             while(mapIterator.hasNext()) {
                 String key = mapIterator.next();
                 SignArea area = mapSignAreas.get(key);
-                if(area != null) {
-                    if(dragPinchManager.getCurrentTouchSignAreaTag().equals(key)) {
-                        continue;
-                    }
+
+                if(area == null) { continue; }
+                if(area.getTag().equals(key)) {
+                    if(dragPinchManager.getCurrentTouchSignAreaTag().equals(key)) { continue; }
 
                     float[] areaSize = getAreaSize(area, pagesOffset, spaceOffset);
                     // 畫出一個簽名框
@@ -1636,9 +1636,11 @@ public class PDFView extends RelativeLayout {
     private void drawInFocusSignArea(Canvas canvas) {
         HashMap<String, SignArea> mapSignAreas = mMapPageSignAreas.get(currentPage);
         if(mapSignAreas != null && mapSignAreas.size() != 0) {
-            SignArea area = mapSignAreas.get(dragPinchManager.getCurrentTouchSignAreaTag());
+            String key = dragPinchManager.getCurrentTouchSignAreaTag();
+            SignArea area = mapSignAreas.get(key);
 
-            if(area != null) {
+            if(area == null) { return; }
+            if(area.getTag().equals(key)) {
                 int[] pagesOffset = getPreviousPagesOffset();
                 float[] spaceOffset = getEachPageSpaceOffset();
                 float[] areaSize = getAreaSize(area, pagesOffset, spaceOffset);

@@ -12,6 +12,7 @@ import static android.text.TextUtils.TruncateAt.END;
 import static android.text.TextUtils.TruncateAt.START;
 
 public class SignArea {
+    private String tag = "";
     private String DEFAULT_DATE_FORMAT = "yyyy/mm/dd";
     private int DEFAULT_TEXT_SIZE = 16;
     private int DEFAULT_EMAIL_START_OFFSET = 8;
@@ -40,7 +41,8 @@ public class SignArea {
     private AddBall addBall = new AddBall();
     private DelBall delBall = new DelBall();
 
-    public SignArea(String email, int left, int top, int right, int bottom) {
+    public SignArea(String tag, String email, int left, int top, int right, int bottom) {
+        this.tag = tag;
         this.email = email;
         this.left = left;
         this.top = top;
@@ -53,6 +55,7 @@ public class SignArea {
     public int getBottom() { return bottom; }
     public int getWidth() { return right - left; }
     public int getHeight() { return bottom - top; }
+    public String getTag() { return tag; }
     public String getEmail() { return email; }
     public String getDate() { return date; }
 
