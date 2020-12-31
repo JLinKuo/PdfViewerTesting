@@ -1799,6 +1799,9 @@ public class PDFView extends RelativeLayout {
     public WatermarkArea getWatermarkArea() {
         return mWatermarkArea;
     }
+    public void setWatermarkArea(WatermarkArea area) {
+        mWatermarkArea = area;
+    }
     public HashMap<String, SignArea> getMapSignAreas() {
         return mMapPageSignAreas.get(currentPage);
     }

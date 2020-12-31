@@ -179,9 +179,12 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
     @Override
     public boolean onSingleTapUp(MotionEvent e) {
-        if(mIsTouchInWatermark) {
-            setWatermarkInFocus();
+        if(mIsTouchInWatermarkDelBall) {
+            deleteWatermark();
             return true;
+        } else if(mIsTouchInWatermark) {
+             setWatermarkInFocus();
+             return true;
         } else if(mIsTouchInSignAreaDelBall) {
             deleteSignArea();
             return true;
@@ -359,11 +362,11 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     private int RATIO_SIGN_AREA_WIDTH_HEIGHT = 2;
     private int MIN_WIDTH_SIGN_AREA = 100;
     private int MIN_HEIGHT_SIGN_AREA = MIN_WIDTH_SIGN_AREA / RATIO_SIGN_AREA_WIDTH_HEIGHT;
-    private WatermarkArea mWatermarkArea = null;
     private HashMap<String, SignArea> mMapSignAreas = new HashMap<>();
     private String mTagCurrentTouchArea = "";       // 用以表示目前觸碰的區域是簽名框/浮水印
 
     private boolean mIsTouchInWatermark = false;
+    private boolean mIsTouchInWatermarkDelBall = false;
     private boolean mIsTouchInSignAreaZoomBall = false;
     private boolean mIsTouchInSignAreaAddBall = false;
     private boolean mIsTouchInSignAreaDelBall = false;
@@ -382,6 +385,13 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     private void setWatermarkInFocus() {
         mIsTouchInWatermark = true;
         pdfView.invalidate();
+    }
+
+    private void deleteWatermark() {
+        pdfView.setWatermarkArea(null);
+        pdfView.invalidate();
+        mIsTouchInWatermarkDelBall = false;
+        mIsTouchInWatermark = false;
     }
 
     private void setSignAreaInFocus() {
@@ -426,9 +436,10 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     }
 
     private boolean chkTouchInWatermarkArea(MotionEvent event) {
-        mWatermarkArea = pdfView.getWatermarkArea();
+        WatermarkArea mWatermarkArea = pdfView.getWatermarkArea();
 
         if(mWatermarkArea == null) { return false; }
+        mIsTouchInWatermarkDelBall = false;
         if(isTouchInWatermark(event)) {
             return true;
         }
@@ -459,6 +470,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     }
 
     private boolean isTouchInWatermark(MotionEvent event) {
+        WatermarkArea mWatermarkArea = pdfView.getWatermarkArea();
         if(mWatermarkArea == null) { return false; }
 
         float xOffset = pdfView.getCurrentXOffset();
@@ -466,7 +478,10 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         float eventXOffset = event.getX() - xOffset;
         float eventYOffset = event.getY() - yOffset;
 
-        if (isInWatermarkArea(mWatermarkArea, eventXOffset, eventYOffset)) {
+        if(isInBall(mWatermarkArea.getDelBall(), event.getX(), event.getY())) {
+            mIsTouchInWatermarkDelBall = true;
+            return true;
+        } else if (isInWatermarkArea(mWatermarkArea, eventXOffset, eventYOffset)) {
             mIsTouchInWatermark = true;
             mTagCurrentTouchArea = mWatermarkArea.getTag();
             return true;
