@@ -560,6 +560,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         pdfView.getMapSignAreas().remove(mTagCurrentTouchArea);
         pdfView.invalidate();
         mIsTouchInSignAreaDelBall = false;
+        mIsTouchInSignArea = false;
     }
 
     private void addSignArea() {
