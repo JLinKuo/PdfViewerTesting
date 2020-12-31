@@ -538,13 +538,13 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
             float eventXOffset = event.getX() - xOffset;
             float eventYOffset = event.getY() - yOffset;
 
-            if(isInBall(area.getDelBall(), eventXOffset, eventYOffset)) {
+            if(isInSignAreaBall(area.getDelBall(), eventXOffset, eventYOffset)) {
                 mIsTouchInSignAreaDelBall = true;
                 return true;
-            } else if(isInBall(area.getAddBall(), eventXOffset, eventYOffset)) {
+            } else if(isInSignAreaBall(area.getAddBall(), eventXOffset, eventYOffset)) {
                 mIsTouchInSignAreaAddBall = true;
                 return true;
-            }  else if(isInBall(area.getZoomBall(), eventXOffset, eventYOffset)) {
+            }  else if(isInSignAreaBall(area.getZoomBall(), eventXOffset, eventYOffset)) {
                 mIsTouchInSignAreaZoomBall = true;
                 return true;
             } else if (isInAnSignArea(area, pagesOffset, eventXOffset, eventYOffset)) {
@@ -629,7 +629,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         return eventX > ballLeft && eventX < ballRight && eventY > ballTop && eventY < ballBottom;
     }
 
-    private boolean isInBall(FunctionBall ball, float eventX, float eventY) {
+    private boolean isInSignAreaBall(FunctionBall ball, float eventX, float eventY) {
         float ballLeft = ball.getLeft();
         float ballRight = ball.getRight();
         float ballTop = ball.getTop();
