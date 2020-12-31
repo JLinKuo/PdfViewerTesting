@@ -391,34 +391,38 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
     private void moveSignArea(float distanceX, float distanceY) {
         SignArea area = mMapSignAreas.get(mTagCurrentTouchArea);
-        int newLeft = area.getLeft() - Math.round(distanceX / pdfView.getZoom());
-        int newTop = area.getTop() - Math.round(distanceY / pdfView.getZoom());
-        int newRight = area.getRight() - Math.round(distanceX / pdfView.getZoom());
-        int newBottom = area.getBottom() - Math.round(distanceY / pdfView.getZoom());
 
-        int sizeAreaWidth = area.getRight() - area.getLeft();
-        int sizeAreaHeight = area.getBottom() - area.getTop();
+        if(area == null) { return; }
+        if(area.getTag().equals(mTagCurrentTouchArea)) {
+            int newLeft = area.getLeft() - Math.round(distanceX / pdfView.getZoom());
+            int newTop = area.getTop() - Math.round(distanceY / pdfView.getZoom());
+            int newRight = area.getRight() - Math.round(distanceX / pdfView.getZoom());
+            int newBottom = area.getBottom() - Math.round(distanceY / pdfView.getZoom());
 
-        SizeF pageSize = pdfView.getPageSize(pdfView.getCurrentPage());
-        if(newTop < 0) {
-            newTop = 0;
-            newBottom = sizeAreaHeight;
-        }
-        if(newBottom > pageSize.getHeight()) {
-            newTop = Math.round(pageSize.getHeight()) - sizeAreaHeight;
-            newBottom = Math.round(pageSize.getHeight());
-        }
-        if(newLeft < 0) {
-            newLeft = 0;
-            newRight = sizeAreaWidth;
-        }
-        if(newRight > pageSize.getWidth()) {
-            newLeft = Math.round(pageSize.getWidth()) - sizeAreaWidth;
-            newRight = Math.round(pageSize.getWidth());
-        }
+            int sizeAreaWidth = area.getRight() - area.getLeft();
+            int sizeAreaHeight = area.getBottom() - area.getTop();
 
-        area.setLeft(newLeft).setTop(newTop).setRight(newRight).setBottom(newBottom);
-        pdfView.invalidate();
+            SizeF pageSize = pdfView.getPageSize(pdfView.getCurrentPage());
+            if (newTop < 0) {
+                newTop = 0;
+                newBottom = sizeAreaHeight;
+            }
+            if (newBottom > pageSize.getHeight()) {
+                newTop = Math.round(pageSize.getHeight()) - sizeAreaHeight;
+                newBottom = Math.round(pageSize.getHeight());
+            }
+            if (newLeft < 0) {
+                newLeft = 0;
+                newRight = sizeAreaWidth;
+            }
+            if (newRight > pageSize.getWidth()) {
+                newLeft = Math.round(pageSize.getWidth()) - sizeAreaWidth;
+                newRight = Math.round(pageSize.getWidth());
+            }
+
+            area.setLeft(newLeft).setTop(newTop).setRight(newRight).setBottom(newBottom);
+            pdfView.invalidate();
+        }
     }
 
     private boolean chkTouchInWatermarkArea(MotionEvent event) {
