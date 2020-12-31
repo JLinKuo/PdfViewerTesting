@@ -26,6 +26,7 @@ import com.github.barteksc.pdfviewer.model.LinkTapEvent;
 import com.github.barteksc.pdfviewer.scroll.ScrollHandle;
 import com.github.barteksc.pdfviewer.sign.FunctionBall;
 import com.github.barteksc.pdfviewer.sign.SignArea;
+import com.github.barteksc.pdfviewer.sign.WatermarkArea;
 import com.github.barteksc.pdfviewer.util.SnapEdge;
 import com.shockwave.pdfium.PdfDocument;
 import com.shockwave.pdfium.util.SizeF;
@@ -165,8 +166,8 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     @Override
     public boolean onDown(MotionEvent e) {
         animationManager.stopFling();
-        if(!chkTouchInSignArea(e)) {
-            cleanSignAreaInFocus();
+        if(!chkTouchInSignArea(e) && !chkTouchInWatermarkArea(e)) {
+            cleanAreaInFocus();
         }
         return true;
     }
@@ -178,7 +179,10 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
     @Override
     public boolean onSingleTapUp(MotionEvent e) {
-        if(mIsTouchInDelBall) {
+        if(mIsTouchInWatermark) {
+            setWatermarkInFocus();
+            return true;
+        } else if(mIsTouchInDelBall) {
             deleteSignArea();
             return true;
         } else if(mIsTouchInAddBall) {
@@ -188,7 +192,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
             setSignAreaInFocus();
             return true;
         } else {
-            cleanSignAreaInFocus();
+            cleanAreaInFocus();
         }
         return false;
     }
@@ -355,19 +359,28 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     private int RATIO_SIGN_AREA_WIDTH_HEIGHT = 2;
     private int MIN_WIDTH_SIGN_AREA = 100;
     private int MIN_HEIGHT_SIGN_AREA = MIN_WIDTH_SIGN_AREA / RATIO_SIGN_AREA_WIDTH_HEIGHT;
+    private WatermarkArea mWatermarkArea = null;
     private HashMap<String, SignArea> mMapSignAreas = new HashMap<>();
-    private String mTagCurrentTouchSignArea = "";
+    private String mTagCurrentTouchArea = "";       // 用以表示目前觸碰的區域是簽名框/浮水印
+
+    private boolean mIsTouchInWatermark = false;
     private boolean mIsTouchInZoomBall = false;
     private boolean mIsTouchInAddBall = false;
     private boolean mIsTouchInDelBall = false;
     private boolean mIsTouchInSignArea = false;
 
-    private void cleanSignAreaInFocus() {
-        mTagCurrentTouchSignArea = "";
+    private void cleanAreaInFocus() {
+        mTagCurrentTouchArea = "";
+        mIsTouchInWatermark = false;
         mIsTouchInDelBall = false;
         mIsTouchInAddBall = false;
         mIsTouchInZoomBall = false;
         mIsTouchInSignArea = false;
+        pdfView.invalidate();
+    }
+
+    private void setWatermarkInFocus() {
+        mIsTouchInWatermark = true;
         pdfView.invalidate();
     }
 
@@ -377,7 +390,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     }
 
     private void moveSignArea(float distanceX, float distanceY) {
-        SignArea area = mMapSignAreas.get(mTagCurrentTouchSignArea);
+        SignArea area = mMapSignAreas.get(mTagCurrentTouchArea);
         int newLeft = area.getLeft() - Math.round(distanceX / pdfView.getZoom());
         int newTop = area.getTop() - Math.round(distanceY / pdfView.getZoom());
         int newRight = area.getRight() - Math.round(distanceX / pdfView.getZoom());
@@ -408,6 +421,17 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         pdfView.invalidate();
     }
 
+    private boolean chkTouchInWatermarkArea(MotionEvent event) {
+        mWatermarkArea = pdfView.getWatermarkArea();
+
+        if(mWatermarkArea == null) { return false; }
+        if(isTouchInWatermark(event)) {
+            return true;
+        }
+
+        return false;
+    }
+
     private boolean chkTouchInSignArea(MotionEvent event) {
         // 20201208 JLin added
         mMapSignAreas = pdfView.getCurrentPageMapSignAreas();
@@ -430,6 +454,32 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         return false;
     }
 
+    private boolean isTouchInWatermark(MotionEvent event) {
+        if(mWatermarkArea == null) { return false; }
+
+        float xOffset = pdfView.getCurrentXOffset();
+        float yOffset = pdfView.getCurrentYOffset();
+        float eventXOffset = event.getX() - xOffset;
+        float eventYOffset = event.getY() - yOffset;
+
+        if (isInWatermarkArea(mWatermarkArea, eventXOffset, eventYOffset)) {
+            mIsTouchInWatermark = true;
+            mTagCurrentTouchArea = mWatermarkArea.getTag();
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean isInWatermarkArea(WatermarkArea area, float eventX, float eventY) {
+        float areaLeft = area.getLeft() * pdfView.getZoom();
+        float areaRight = area.getRight() * pdfView.getZoom();
+        float areaTop = area.getTop() * pdfView.getZoom();
+        float areaBottom = area.getBottom() * pdfView.getZoom();
+
+        return eventX > areaLeft && eventX < areaRight && eventY > areaTop && eventY < areaBottom;
+    }
+
     private boolean isTouchInAllOtherSignArea(MotionEvent event) {
         Iterator<String> mapIterator = mMapSignAreas.keySet().iterator();
         while (mapIterator.hasNext()) {
@@ -437,7 +487,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
             SignArea area = mMapSignAreas.get(key);
 
-            if (area == null) { continue; }
+            if(area == null) { continue; }
             if(area.getTag().equals(key)) {
                 int[] pagesOffset = pdfView.getPreviousPagesOffset();
 
@@ -448,7 +498,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
                 if (isInAnSignArea(area, pagesOffset, eventXOffset, eventYOffset)) {
                     mIsTouchInSignArea = true;
-                    mTagCurrentTouchSignArea = key;
+                    mTagCurrentTouchArea = key;
                     return true;
                 }
             }
@@ -458,10 +508,10 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     }
 
     private boolean isTouchInFocusSignArea(MotionEvent event) {
-        SignArea area = mMapSignAreas.get(mTagCurrentTouchSignArea);
+        SignArea area = mMapSignAreas.get(mTagCurrentTouchArea);
 
         if(area == null) { return false; }
-        if(area.getTag().equals(mTagCurrentTouchSignArea)) {
+        if(area.getTag().equals(mTagCurrentTouchArea)) {
             int[] pagesOffset = pdfView.getPreviousPagesOffset();
 
             float xOffset = pdfView.getCurrentXOffset();
@@ -488,17 +538,17 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     }
 
     private void deleteSignArea() {
-        pdfView.getMapSignAreas().remove(mTagCurrentTouchSignArea);
+        pdfView.getMapSignAreas().remove(mTagCurrentTouchArea);
         pdfView.invalidate();
         mIsTouchInDelBall = false;
     }
 
     private void addSignArea() {
         HashMap<String, SignArea> currentPageSignAreas = pdfView.getMapSignAreas();
-        SignArea area = currentPageSignAreas.get(mTagCurrentTouchSignArea);
+        SignArea area = currentPageSignAreas.get(mTagCurrentTouchArea);
 
         if(area == null) { return; }
-        if(area.getTag().equals(mTagCurrentTouchSignArea)) {
+        if(area.getTag().equals(mTagCurrentTouchArea)) {
             String tag = String.valueOf(System.currentTimeMillis());
             int left = area.getLeft() + 50;
             int top = area.getTop() + 50;
@@ -513,10 +563,10 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
     private void zoomSignArea(float distanceX, float distanceY) {
         if(distanceX * distanceY > 0) {                 // 表示手勢滑動是往左上或右下
-            SignArea area = pdfView.getMapSignAreas().get(mTagCurrentTouchSignArea);
+            SignArea area = pdfView.getMapSignAreas().get(mTagCurrentTouchArea);
 
             if(area == null) { return; }
-            if(area.getTag().equals(mTagCurrentTouchSignArea)) {
+            if(area.getTag().equals(mTagCurrentTouchArea)) {
                 int areaWidth = area.getRight() - area.getLeft();
                 int areaHeight = area.getBottom() - area.getTop();
                 double areaDiagonal = Math.sqrt(Math.pow(areaWidth, 2) + Math.pow(areaHeight, 2));
@@ -559,7 +609,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         return eventX > ballLeft && eventX < ballRight && eventY > ballTop && eventY < ballBottom;
     }
 
-    public String getCurrentTouchSignAreaTag() {
-        return mTagCurrentTouchSignArea;
+    public String getCurrentTouchAreaTag() {
+        return mTagCurrentTouchArea;
     }
 }

@@ -18,6 +18,10 @@ public class WatermarkArea {
     }
 
     public String getTag() { return tag; }
+    public float getLeft() { return mWatermarkDestRect.left; }
+    public float getTop() { return mWatermarkDestRect.top; }
+    public float getRight() { return mWatermarkDestRect.right; }
+    public float getBottom() { return mWatermarkDestRect.bottom; }
     public int getWatermarkRes() { return mWatermarkRes; }
     public RectF getWatermarkDestRect() { return mWatermarkDestRect; }
     public Paint getBitmapPaint() {

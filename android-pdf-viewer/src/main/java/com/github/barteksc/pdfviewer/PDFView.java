@@ -652,7 +652,7 @@ public class PDFView extends RelativeLayout {
         //20201201: JLin Added
         drawWatermark(canvas);
         drawAllOtherSignAreas(canvas);
-        drawInFocusSignArea(canvas);
+        drawInFocusArea(canvas);
         //
 
         // Restores the canvas position
@@ -1583,9 +1583,9 @@ public class PDFView extends RelativeLayout {
 
     private void drawWatermark(Canvas canvas) {
         if(mWatermarkArea == null) { return; }
-
-        drawWatermarkBitmap(canvas);
-        drawWatermarkOutline(canvas);
+        if(!dragPinchManager.getCurrentTouchAreaTag().equals(mWatermarkArea.getTag())) {
+            drawWatermarkBitmap(canvas);
+        }
     }
 
     private void drawWatermarkBitmap(Canvas canvas) {
@@ -1629,7 +1629,7 @@ public class PDFView extends RelativeLayout {
 
                 if(area == null) { continue; }
                 if(area.getTag().equals(key)) {
-                    if(dragPinchManager.getCurrentTouchSignAreaTag().equals(key)) { continue; }
+                    if(dragPinchManager.getCurrentTouchAreaTag().equals(key)) { continue; }
 
                     float[] areaSize = getAreaSize(area, pagesOffset, spaceOffset);
                     // 畫出一個簽名框
@@ -1639,14 +1639,30 @@ public class PDFView extends RelativeLayout {
         }
     }
 
-    private void drawInFocusSignArea(Canvas canvas) {
+    private void drawInFocusArea(Canvas canvas) {
+        String key = dragPinchManager.getCurrentTouchAreaTag();
+        if(mWatermarkArea != null && mWatermarkArea.getTag().equals(key)) {
+            doDrawWatermarkInFocus(canvas, key);
+        } else {
+            doDrawSignAreaInFocus(canvas, key);
+        }
+    }
+
+    private void doDrawWatermarkInFocus(Canvas canvas, String key) {
+        if(mWatermarkArea == null) { return; }
+        if(mWatermarkArea.getTag().equals(key)) {
+            drawWatermarkBitmap(canvas);
+            drawWatermarkOutline(canvas);
+        }
+    }
+
+    private void doDrawSignAreaInFocus(Canvas canvas, String key) {
         HashMap<String, SignArea> mapSignAreas = mMapPageSignAreas.get(currentPage);
-        if(mapSignAreas != null && mapSignAreas.size() != 0) {
-            String key = dragPinchManager.getCurrentTouchSignAreaTag();
+        if (mapSignAreas != null && mapSignAreas.size() != 0) {
             SignArea area = mapSignAreas.get(key);
 
-            if(area == null) { return; }
-            if(area.getTag().equals(key)) {
+            if (area == null) { return; }
+            if (area.getTag().equals(key)) {
                 int[] pagesOffset = getPreviousPagesOffset();
                 float[] spaceOffset = getEachPageSpaceOffset();
                 float[] areaSize = getAreaSize(area, pagesOffset, spaceOffset);
@@ -1748,6 +1764,9 @@ public class PDFView extends RelativeLayout {
                                          areaSize[2] + height / 2F };           // Bottom
         ball.setLeft(ballSize[0]).setRight(ballSize[1]).setTop(ballSize[2]).setBottom(ballSize[3]);
         return ballSize;
+    }
+    public WatermarkArea getWatermarkArea() {
+        return mWatermarkArea;
     }
     public HashMap<String, SignArea> getMapSignAreas() {
         return mMapPageSignAreas.get(currentPage);
