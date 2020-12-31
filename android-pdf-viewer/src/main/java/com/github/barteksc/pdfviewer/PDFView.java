@@ -1650,30 +1650,26 @@ public class PDFView extends RelativeLayout {
     private void doDrawWatermarkInFocus(Canvas canvas, String key) {
         if(mWatermarkArea == null) { return; }
         if(mWatermarkArea.getTag().equals(key)) {
-            int[] pagesOffset = getPreviousPagesOffset();
-            float[] spaceOffset = getEachPageSpaceOffset();
-            float[] areaSize = getWatermarkAreaSize(mWatermarkArea, pagesOffset, spaceOffset);
-
             drawWatermarkBitmap(canvas);
             drawWatermarkOutline(canvas);
-            drawWatermarkAnDelBall(canvas, mWatermarkArea, areaSize);
+            drawWatermarkAnDelBall(canvas, mWatermarkArea);
         }
     }
 
-    private void drawWatermarkAnDelBall(Canvas canvas, WatermarkArea area, float[] areaSize) {
+    private void drawWatermarkAnDelBall(Canvas canvas, WatermarkArea area) {
         Bitmap delBitmap = drawable2Bitmap(ResourcesCompat.getDrawable(
                 getResources(), R.drawable.ic_icon_delete_red_bg, null));
         float[] delBallSize = setWatermarkDelBallSize(area.getDelBall(), delBitmap.getWidth(),
-                delBitmap.getHeight(), areaSize);
+                delBitmap.getHeight(), area);
         canvas.drawBitmap(delBitmap, delBallSize[0], delBallSize[2], new Paint());
         delBitmap.recycle();
     }
 
-    private float[] setWatermarkDelBallSize(WatermarkArea.DelBall ball, int width, int height, float[] areaSize) {
-        float[] ballSize = new float[] { areaSize[1] - width / 2F,              // Left
-                                         areaSize[1] + width / 2F,              // Right
-                                         areaSize[2] - height / 2F,             // Top
-                                         areaSize[2] + height / 2F };           // Bottom
+    private float[] setWatermarkDelBallSize(WatermarkArea.DelBall ball, int width, int height, WatermarkArea area) {
+        float[] ballSize = new float[] { area.getRight() - width / 2F,              // Left
+                                         area.getRight() + width / 2F,              // Right
+                                         area.getTop() - height / 2F,               // Top
+                                         area.getTop() + height / 2F };             // Bottom
         ball.setLeft(ballSize[0]).setRight(ballSize[1]).setTop(ballSize[2]).setBottom(ballSize[3]);
         return ballSize;
     }
