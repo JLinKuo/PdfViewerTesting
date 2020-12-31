@@ -12,6 +12,8 @@ public class WatermarkArea {
     private Paint bitmapPaint = null;
     private Paint outlinePaint = null;
 
+    private DelBall delBall = new DelBall();
+
     public WatermarkArea(String tag, int watermarkRes) {
         this.tag = tag;
         this.mWatermarkRes = watermarkRes;
@@ -24,6 +26,9 @@ public class WatermarkArea {
     public float getBottom() { return mWatermarkDestRect.bottom; }
     public int getWatermarkRes() { return mWatermarkRes; }
     public RectF getWatermarkDestRect() { return mWatermarkDestRect; }
+
+    public DelBall getDelBall() { return delBall; }
+
     public Paint getBitmapPaint() {
         if(bitmapPaint == null) {
             bitmapPaint = new Paint();
@@ -51,5 +56,7 @@ public class WatermarkArea {
     public void setWatermarkDestRect(RectF watermarkDestRect) {
         this.mWatermarkDestRect = watermarkDestRect;
     }
+
+    public class DelBall extends FunctionBall {}
 }
 
