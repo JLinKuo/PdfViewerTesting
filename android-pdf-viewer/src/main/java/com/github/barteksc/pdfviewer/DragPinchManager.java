@@ -478,7 +478,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         float eventXOffset = event.getX() - xOffset;
         float eventYOffset = event.getY() - yOffset;
 
-        if(isInBall(mWatermarkArea.getDelBall(), event.getX(), event.getY())) {
+        if(isInWatermarkBall(mWatermarkArea.getDelBall(), eventXOffset, eventYOffset)) {
             mIsTouchInWatermarkDelBall = true;
             return true;
         } else if (isInWatermarkArea(mWatermarkArea, eventXOffset, eventYOffset)) {
@@ -618,6 +618,15 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         float areaBottom = pagesOffset[1] + area.getBottom() * pdfView.getZoom();
 
         return eventX > areaLeft && eventX < areaRight && eventY > areaTop && eventY < areaBottom;
+    }
+
+    private boolean isInWatermarkBall(FunctionBall ball, float eventX, float eventY) {
+        float ballLeft = ball.getLeft();
+        float ballRight = ball.getRight();
+        float ballTop = ball.getTop();
+        float ballBottom = ball.getBottom();
+
+        return eventX > ballLeft && eventX < ballRight && eventY > ballTop && eventY < ballBottom;
     }
 
     private boolean isInBall(FunctionBall ball, float eventX, float eventY) {
