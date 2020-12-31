@@ -182,10 +182,10 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         if(mIsTouchInWatermark) {
             setWatermarkInFocus();
             return true;
-        } else if(mIsTouchInDelBall) {
+        } else if(mIsTouchInSignAreaDelBall) {
             deleteSignArea();
             return true;
-        } else if(mIsTouchInAddBall) {
+        } else if(mIsTouchInSignAreaAddBall) {
             addSignArea();
             return true;
         } else if(mIsTouchInSignArea) {
@@ -200,7 +200,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
         // 20201204 Jin Added
-        if(mIsTouchInZoomBall) {
+        if(mIsTouchInSignAreaZoomBall) {
             if(distanceX != 0 && distanceY != 0) {
                 zoomSignArea(distanceX, distanceY);
             }
@@ -331,8 +331,8 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
         if (event.getAction() == MotionEvent.ACTION_UP) {
             // 20201222 JLin Added
-            if(mIsTouchInZoomBall) {
-                mIsTouchInZoomBall = false;
+            if(mIsTouchInSignAreaZoomBall) {
+                mIsTouchInSignAreaZoomBall = false;
             //
             } else if (scrolling) {
                 scrolling = false;
@@ -364,17 +364,17 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     private String mTagCurrentTouchArea = "";       // 用以表示目前觸碰的區域是簽名框/浮水印
 
     private boolean mIsTouchInWatermark = false;
-    private boolean mIsTouchInZoomBall = false;
-    private boolean mIsTouchInAddBall = false;
-    private boolean mIsTouchInDelBall = false;
+    private boolean mIsTouchInSignAreaZoomBall = false;
+    private boolean mIsTouchInSignAreaAddBall = false;
+    private boolean mIsTouchInSignAreaDelBall = false;
     private boolean mIsTouchInSignArea = false;
 
     private void cleanAreaInFocus() {
         mTagCurrentTouchArea = "";
         mIsTouchInWatermark = false;
-        mIsTouchInDelBall = false;
-        mIsTouchInAddBall = false;
-        mIsTouchInZoomBall = false;
+        mIsTouchInSignAreaDelBall = false;
+        mIsTouchInSignAreaAddBall = false;
+        mIsTouchInSignAreaZoomBall = false;
         mIsTouchInSignArea = false;
         pdfView.invalidate();
     }
@@ -444,9 +444,9 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
         if(mMapSignAreas.size() != 0) {
             // 取消三個功能圓球的touch flag
-            mIsTouchInZoomBall = false;
-            mIsTouchInAddBall = false;
-            mIsTouchInDelBall = false;
+            mIsTouchInSignAreaZoomBall = false;
+            mIsTouchInSignAreaAddBall = false;
+            mIsTouchInSignAreaDelBall = false;
 
             if (isTouchInFocusSignArea(event)) {
                 return true;
@@ -524,13 +524,13 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
             float eventYOffset = event.getY() - yOffset;
 
             if(isInBall(area.getDelBall(), eventXOffset, eventYOffset)) {
-                mIsTouchInDelBall = true;
+                mIsTouchInSignAreaDelBall = true;
                 return true;
             } else if(isInBall(area.getAddBall(), eventXOffset, eventYOffset)) {
-                mIsTouchInAddBall = true;
+                mIsTouchInSignAreaAddBall = true;
                 return true;
             }  else if(isInBall(area.getZoomBall(), eventXOffset, eventYOffset)) {
-                mIsTouchInZoomBall = true;
+                mIsTouchInSignAreaZoomBall = true;
                 return true;
             } else if (isInAnSignArea(area, pagesOffset, eventXOffset, eventYOffset)) {
                 mIsTouchInSignArea = true;
@@ -544,7 +544,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     private void deleteSignArea() {
         pdfView.getMapSignAreas().remove(mTagCurrentTouchArea);
         pdfView.invalidate();
-        mIsTouchInDelBall = false;
+        mIsTouchInSignAreaDelBall = false;
     }
 
     private void addSignArea() {
@@ -561,7 +561,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
             currentPageSignAreas.put(tag, new SignArea(tag, "yaerse@yahoo.com.tw",
                     left, top, right, bottom));
             pdfView.invalidate();
-            mIsTouchInAddBall = false;
+            mIsTouchInSignAreaAddBall = false;
         }
     }
 

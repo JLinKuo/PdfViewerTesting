@@ -55,7 +55,6 @@ import com.github.barteksc.pdfviewer.listener.OnTapListener;
 import com.github.barteksc.pdfviewer.model.PagePart;
 import com.github.barteksc.pdfviewer.scroll.ScrollHandle;
 import com.github.barteksc.pdfviewer.sign.SignArea;
-import com.github.barteksc.pdfviewer.sign.SignArea.*;
 import com.github.barteksc.pdfviewer.sign.WatermarkArea;
 import com.github.barteksc.pdfviewer.source.AssetSource;
 import com.github.barteksc.pdfviewer.source.ByteArraySource;
@@ -1631,7 +1630,7 @@ public class PDFView extends RelativeLayout {
                 if(area.getTag().equals(key)) {
                     if(dragPinchManager.getCurrentTouchAreaTag().equals(key)) { continue; }
 
-                    float[] areaSize = getAreaSize(area, pagesOffset, spaceOffset);
+                    float[] areaSize = getSignAreaSize(area, pagesOffset, spaceOffset);
                     // 畫出一個簽名框
                     drawAnSignArea(canvas, area, areaSize, pagesOffset, spaceOffset);
                 }
@@ -1665,16 +1664,16 @@ public class PDFView extends RelativeLayout {
             if (area.getTag().equals(key)) {
                 int[] pagesOffset = getPreviousPagesOffset();
                 float[] spaceOffset = getEachPageSpaceOffset();
-                float[] areaSize = getAreaSize(area, pagesOffset, spaceOffset);
+                float[] areaSize = getSignAreaSize(area, pagesOffset, spaceOffset);
 
                 // 畫出一個簽名框
                 drawAnSignArea(canvas, area, areaSize, pagesOffset, spaceOffset);
                 // 畫出放大縮小簽名框的功能按鈕
-                drawAnZoomBall(canvas, area, areaSize);
+                drawSignAreaAnZoomBall(canvas, area, areaSize);
                 // 畫出新增簽名框的功能按鈕
-                drawAnAddBall(canvas, area, areaSize);
+                drawSignAreaAnAddBall(canvas, area, areaSize);
                 // 畫出刪除簽名框的功能按鈕
-                drawAnDelBall(canvas, area, areaSize);
+                drawSignAreaAnDelBall(canvas, area, areaSize);
             }
         }
     }
@@ -1709,7 +1708,7 @@ public class PDFView extends RelativeLayout {
         canvas.drawText(date, x, y, area.getDatePaint());
     }
 
-    private float[] getAreaSize(SignArea area, int[] pagesOffset, float[] spaceOffset) {
+    private float[] getSignAreaSize(SignArea area, int[] pagesOffset, float[] spaceOffset) {
         return new float[]{
                 pagesOffset[0] + area.getLeft() * zoom + spaceOffset[0],        // Left
                 pagesOffset[0] + area.getRight() * zoom + spaceOffset[0],       // Right
@@ -1717,15 +1716,15 @@ public class PDFView extends RelativeLayout {
                 pagesOffset[1] + area.getBottom() * zoom + spaceOffset[1]       // Bottom
         };
     }
-    private void drawAnZoomBall(Canvas canvas, SignArea area, float[] areaSize) {
+    private void drawSignAreaAnZoomBall(Canvas canvas, SignArea area, float[] areaSize) {
         Bitmap zoomBitmap = drawable2Bitmap(ResourcesCompat.getDrawable(
                 getResources(), R.drawable.ic_icon_zoom_yellow_bg, null));
-        float[] zoomBallSize = setZoomBallSize(area.getZoomBall(), zoomBitmap.getWidth(),
+        float[] zoomBallSize = setSignAreaZoomBallSize(area.getZoomBall(), zoomBitmap.getWidth(),
                 zoomBitmap.getHeight(), areaSize);
         canvas.drawBitmap(zoomBitmap, zoomBallSize[0], zoomBallSize[2], new Paint());
         zoomBitmap.recycle();
     }
-    private float[] setZoomBallSize(ZoomBall ball, int width, int height, float[] areaSize) {
+    private float[] setSignAreaZoomBallSize(SignArea.ZoomBall ball, int width, int height, float[] areaSize) {
         float[] ballSize = new float[] { areaSize[1] - width / 2F,              // Left
                                          areaSize[1] + width / 2F,              // Right
                                          areaSize[3] - height / 2F,             // Top
@@ -1733,15 +1732,15 @@ public class PDFView extends RelativeLayout {
         ball.setLeft(ballSize[0]).setRight(ballSize[1]).setTop(ballSize[2]).setBottom(ballSize[3]);
         return ballSize;
     }
-    private void drawAnAddBall(Canvas canvas, SignArea area, float[] areaSize) {
+    private void drawSignAreaAnAddBall(Canvas canvas, SignArea area, float[] areaSize) {
         Bitmap addBitmap = drawable2Bitmap(ResourcesCompat.getDrawable(
                 getResources(), R.drawable.ic_icon_add_yellow_bg, null));
-        float[] addBallSize = setAddBallSize(area.getAddBall(), addBitmap.getWidth(),
+        float[] addBallSize = setSignAreaAddBallSize(area.getAddBall(), addBitmap.getWidth(),
                 addBitmap.getHeight(), areaSize);
         canvas.drawBitmap(addBitmap, addBallSize[0], addBallSize[2], new Paint());
         addBitmap.recycle();
     }
-    private float[] setAddBallSize(AddBall ball, int width, int height, float[] areaSize) {
+    private float[] setSignAreaAddBallSize(SignArea.AddBall ball, int width, int height, float[] areaSize) {
         float[] ballSize = new float[] { areaSize[0] - width / 2F,              // Left
                                          areaSize[0] + width / 2F,              // Right
                                          areaSize[2] - height / 2F,             // Top
@@ -1749,15 +1748,15 @@ public class PDFView extends RelativeLayout {
         ball.setLeft(ballSize[0]).setRight(ballSize[1]).setTop(ballSize[2]).setBottom(ballSize[3]);
         return ballSize;
     }
-    private void drawAnDelBall(Canvas canvas, SignArea area, float[] areaSize) {
+    private void drawSignAreaAnDelBall(Canvas canvas, SignArea area, float[] areaSize) {
         Bitmap delBitmap = drawable2Bitmap(ResourcesCompat.getDrawable(
                 getResources(), R.drawable.ic_icon_delete_red_bg, null));
-        float[] delBallSize = setDelBallSize(area.getDelBall(), delBitmap.getWidth(),
+        float[] delBallSize = setSignAreaDelBallSize(area.getDelBall(), delBitmap.getWidth(),
                 delBitmap.getHeight(), areaSize);
         canvas.drawBitmap(delBitmap, delBallSize[0], delBallSize[2], new Paint());
         delBitmap.recycle();
     }
-    private float[] setDelBallSize(DelBall ball, int width, int height, float[] areaSize) {
+    private float[] setSignAreaDelBallSize(SignArea.DelBall ball, int width, int height, float[] areaSize) {
         float[] ballSize = new float[] { areaSize[1] - width / 2F,              // Left
                                          areaSize[1] + width / 2F,              // Right
                                          areaSize[2] - height / 2F,             // Top
