@@ -12,6 +12,7 @@ public class WatermarkArea {
     private Paint bitmapPaint = null;
     private Paint outlinePaint = null;
 
+    private ZoomBall zoomBall = new ZoomBall();
     private DelBall delBall = new DelBall();
 
     public WatermarkArea(String tag, int watermarkRes) {
@@ -27,6 +28,7 @@ public class WatermarkArea {
     public int getWatermarkRes() { return mWatermarkRes; }
     public RectF getWatermarkDestRect() { return mWatermarkDestRect; }
 
+    public ZoomBall getZoomBall() { return zoomBall; }
     public DelBall getDelBall() { return delBall; }
 
     public Paint getBitmapPaint() {
@@ -57,6 +59,7 @@ public class WatermarkArea {
         this.mWatermarkDestRect = watermarkDestRect;
     }
 
+    public class ZoomBall extends FunctionBall {}
     public class DelBall extends FunctionBall {}
 }
 
