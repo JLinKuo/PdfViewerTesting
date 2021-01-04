@@ -382,6 +382,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     private void cleanAreaInFocus() {
         mTagCurrentTouchArea = "";
         mIsTouchInWatermark = false;
+        mIsTouchInWatermarkDelBall = false;
         mIsTouchInWatermarkZoomBall = false;
         mIsTouchInSignAreaDelBall = false;
         mIsTouchInSignAreaAddBall = false;
