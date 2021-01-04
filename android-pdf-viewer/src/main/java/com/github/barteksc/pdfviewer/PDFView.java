@@ -1735,9 +1735,9 @@ public class PDFView extends RelativeLayout {
         Paint outlinePaint = area.getOutlinePaint();
 
         // 畫出簽名框的背景
-        canvas.drawRect(areaSize[0], areaSize[2], areaSize[1], areaSize[3], bgPaint);
+        canvas.drawRect(areaSize[0], areaSize[1], areaSize[2], areaSize[3], bgPaint);
         // 畫出簽名框的外框
-        canvas.drawRect(areaSize[0], areaSize[2], areaSize[1], areaSize[3], outlinePaint);
+        canvas.drawRect(areaSize[0], areaSize[1], areaSize[2], areaSize[3], outlinePaint);
         // 畫出 E-MAIL
         drawEMailText(canvas, area, pagesOffset, spaceOffset);
         // 畫出 Date
@@ -1763,8 +1763,8 @@ public class PDFView extends RelativeLayout {
     private float[] getSignAreaSize(SignArea area, int[] pagesOffset, float[] spaceOffset) {
         return new float[]{
                 pagesOffset[0] + area.getLeft() * zoom + spaceOffset[0],        // Left
-                pagesOffset[0] + area.getRight() * zoom + spaceOffset[0],       // Right
                 pagesOffset[1] + area.getTop() * zoom + spaceOffset[1],         // Top
+                pagesOffset[0] + area.getRight() * zoom + spaceOffset[0],       // Right
                 pagesOffset[1] + area.getBottom() * zoom + spaceOffset[1]       // Bottom
         };
     }
@@ -1773,48 +1773,48 @@ public class PDFView extends RelativeLayout {
                 getResources(), R.drawable.ic_icon_zoom_yellow_bg, null));
         float[] zoomBallSize = setSignAreaZoomBallSize(area.getZoomBall(), zoomBitmap.getWidth(),
                 zoomBitmap.getHeight(), areaSize);
-        canvas.drawBitmap(zoomBitmap, zoomBallSize[0], zoomBallSize[2], new Paint());
+        canvas.drawBitmap(zoomBitmap, zoomBallSize[0], zoomBallSize[1], new Paint());
         zoomBitmap.recycle();
     }
     private float[] setSignAreaZoomBallSize(SignArea.ZoomBall ball, int width, int height, float[] areaSize) {
-        float[] ballSize = new float[] { areaSize[1] - width / 2F,              // Left
-                                         areaSize[1] + width / 2F,              // Right
-                                         areaSize[3] - height / 2F,             // Top
-                                         areaSize[3] + height / 2F };           // Bottom
-        ball.setLeft(ballSize[0]).setRight(ballSize[1]).setTop(ballSize[2]).setBottom(ballSize[3]);
-        return ballSize;
+        float[] ballSides = new float[] { areaSize[2] - width / 2F,              // Left
+                                          areaSize[3] - height / 2F,             // Top
+                                          areaSize[2] + width / 2F,              // Right
+                                          areaSize[3] + height / 2F };           // Bottom
+        ball.setLeft(ballSides[0]).setTop(ballSides[1]).setRight(ballSides[2]).setBottom(ballSides[3]);
+        return ballSides;
     }
     private void drawSignAreaAnAddBall(Canvas canvas, SignArea area, float[] areaSize) {
         Bitmap addBitmap = drawable2Bitmap(ResourcesCompat.getDrawable(
                 getResources(), R.drawable.ic_icon_add_yellow_bg, null));
         float[] addBallSize = setSignAreaAddBallSize(area.getAddBall(), addBitmap.getWidth(),
                 addBitmap.getHeight(), areaSize);
-        canvas.drawBitmap(addBitmap, addBallSize[0], addBallSize[2], new Paint());
+        canvas.drawBitmap(addBitmap, addBallSize[0], addBallSize[1], new Paint());
         addBitmap.recycle();
     }
     private float[] setSignAreaAddBallSize(SignArea.AddBall ball, int width, int height, float[] areaSize) {
-        float[] ballSize = new float[] { areaSize[0] - width / 2F,              // Left
-                                         areaSize[0] + width / 2F,              // Right
-                                         areaSize[2] - height / 2F,             // Top
-                                         areaSize[2] + height / 2F };           // Bottom
-        ball.setLeft(ballSize[0]).setRight(ballSize[1]).setTop(ballSize[2]).setBottom(ballSize[3]);
-        return ballSize;
+        float[] ballSides = new float[] { areaSize[0] - width / 2F,              // Left
+                                          areaSize[1] - height / 2F,             // Top
+                                          areaSize[0] + width / 2F,              // Right
+                                          areaSize[1] + height / 2F };           // Bottom
+        ball.setLeft(ballSides[0]).setTop(ballSides[1]).setRight(ballSides[2]).setBottom(ballSides[3]);
+        return ballSides;
     }
     private void drawSignAreaAnDelBall(Canvas canvas, SignArea area, float[] areaSize) {
         Bitmap delBitmap = drawable2Bitmap(ResourcesCompat.getDrawable(
                 getResources(), R.drawable.ic_icon_delete_red_bg, null));
         float[] delBallSize = setSignAreaDelBallSize(area.getDelBall(), delBitmap.getWidth(),
                 delBitmap.getHeight(), areaSize);
-        canvas.drawBitmap(delBitmap, delBallSize[0], delBallSize[2], new Paint());
+        canvas.drawBitmap(delBitmap, delBallSize[0], delBallSize[1], new Paint());
         delBitmap.recycle();
     }
     private float[] setSignAreaDelBallSize(SignArea.DelBall ball, int width, int height, float[] areaSize) {
-        float[] ballSize = new float[] { areaSize[1] - width / 2F,              // Left
-                                         areaSize[1] + width / 2F,              // Right
-                                         areaSize[2] - height / 2F,             // Top
-                                         areaSize[2] + height / 2F };           // Bottom
-        ball.setLeft(ballSize[0]).setRight(ballSize[1]).setTop(ballSize[2]).setBottom(ballSize[3]);
-        return ballSize;
+        float[] ballSides = new float[] { areaSize[2] - width / 2F,              // Left
+                                          areaSize[1] - height / 2F,             // Top
+                                          areaSize[2] + width / 2F,              // Right
+                                          areaSize[1] + height / 2F };           // Bottom
+        ball.setLeft(ballSides[0]).setTop(ballSides[1]).setRight(ballSides[2]).setBottom(ballSides[3]);
+        return ballSides;
     }
     public WatermarkArea getWatermarkArea() {
         return mWatermarkArea;
