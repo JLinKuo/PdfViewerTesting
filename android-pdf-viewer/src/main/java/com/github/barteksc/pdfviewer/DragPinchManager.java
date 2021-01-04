@@ -203,11 +203,15 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
         // 20201204 Jin Added
-        if(mIsTouchInSignAreaZoomBall) {
+        if(mIsTouchInWatermarkZoomBall) {
+            if(distanceX != 0 && distanceY != 0) {
+                zoomWatermark(distanceX, distanceY);
+            }
+            return true;
+        } else if(mIsTouchInSignAreaZoomBall) {
             if(distanceX != 0 && distanceY != 0) {
                 zoomSignArea(distanceX, distanceY);
             }
-
             return true;
         } else if(mIsTouchInSignArea) {
             moveSignArea(distanceX, distanceY);
@@ -334,7 +338,9 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
         if (event.getAction() == MotionEvent.ACTION_UP) {
             // 20201222 JLin Added
-            if(mIsTouchInSignAreaZoomBall) {
+            if (mIsTouchInWatermarkZoomBall) {
+                mIsTouchInWatermarkZoomBall = false;
+            } else if(mIsTouchInSignAreaZoomBall) {
                 mIsTouchInSignAreaZoomBall = false;
             //
             } else if (scrolling) {
@@ -366,6 +372,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     private String mTagCurrentTouchArea = "";       // 用以表示目前觸碰的區域是簽名框/浮水印
 
     private boolean mIsTouchInWatermark = false;
+    private boolean mIsTouchInWatermarkZoomBall = false;
     private boolean mIsTouchInWatermarkDelBall = false;
     private boolean mIsTouchInSignAreaZoomBall = false;
     private boolean mIsTouchInSignAreaAddBall = false;
@@ -375,6 +382,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     private void cleanAreaInFocus() {
         mTagCurrentTouchArea = "";
         mIsTouchInWatermark = false;
+        mIsTouchInWatermarkZoomBall = false;
         mIsTouchInSignAreaDelBall = false;
         mIsTouchInSignAreaAddBall = false;
         mIsTouchInSignAreaZoomBall = false;
@@ -440,6 +448,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
         if(mWatermarkArea == null) { return false; }
         mIsTouchInWatermarkDelBall = false;
+        mIsTouchInWatermarkZoomBall = false;
         if(isTouchInWatermark(event)) {
             return true;
         }
@@ -480,6 +489,9 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
         if(isInWatermarkBall(mWatermarkArea.getDelBall(), eventXOffset, eventYOffset)) {
             mIsTouchInWatermarkDelBall = true;
+            return true;
+        } else if(isInWatermarkBall(mWatermarkArea.getZoomBall(), eventXOffset, eventYOffset)) {
+            mIsTouchInWatermarkZoomBall = true;
             return true;
         } else if (isInWatermarkArea(mWatermarkArea, eventXOffset, eventYOffset)) {
             mIsTouchInWatermark = true;
@@ -581,6 +593,30 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         }
     }
 
+    private void zoomWatermark(float distanceX, float distanceY) {
+        if(distanceX * distanceY > 0) {                 // 表示手勢滑動是往左上或右下
+            WatermarkArea area = pdfView.getWatermarkArea();
+
+            if(area == null) { return; }
+            if(area.getTag().equals(mTagCurrentTouchArea)) {
+                float areaWidth = area.getRight() - area.getLeft();
+                float areaHeight = area.getBottom() - area.getTop();
+                double areaDiagonal = Math.sqrt(Math.pow(areaWidth, 2) + Math.pow(areaHeight, 2));
+                double fingerMove = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
+                double newDiagonal = areaDiagonal;
+                if(distanceX < 0 && distanceX < 0) {     // 負數表示往右下滑動，正數表示往左上滑動
+                    newDiagonal += fingerMove;
+                } else {
+                    newDiagonal -= fingerMove;
+                }
+                float ratio = (float) (newDiagonal / areaDiagonal);
+
+                pdfView.setWatermarkRatio(ratio);
+                pdfView.invalidate();
+            }
+        }
+    }
+
     private void zoomSignArea(float distanceX, float distanceY) {
         if(distanceX * distanceY > 0) {                 // 表示手勢滑動是往左上或右下
             SignArea area = pdfView.getMapSignAreas().get(mTagCurrentTouchArea);
@@ -641,4 +677,5 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     public String getCurrentTouchAreaTag() {
         return mTagCurrentTouchArea;
     }
+    public boolean ismIsTouchInWatermarkZoomBall() { return mIsTouchInWatermarkZoomBall; }
 }

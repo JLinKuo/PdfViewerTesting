@@ -1577,6 +1577,10 @@ public class PDFView extends RelativeLayout {
 
     //20201201: JLin Added
     private WatermarkArea mWatermarkArea = null;
+    private float mWatermarkRatio = 1;
+    public void setWatermarkRatio(float ratio) {
+        this.mWatermarkRatio = ratio;
+    }
 
     private HashMap<Integer, HashMap<String, SignArea>> mMapPageSignAreas = new HashMap<>();
 
@@ -1594,17 +1598,27 @@ public class PDFView extends RelativeLayout {
         float[] spaceOffset = getEachPageSpaceOffset();
         SizeF pageSize = getPageSize(getCurrentPage());
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), mWatermarkArea.getWatermarkRes());
-        float destLeft = pagesOffset[0] + spaceOffset[0] + (pageSize.getWidth() - bitmap.getWidth()) * zoom / 2;
-        float destTop = pagesOffset[1] + spaceOffset[1] + (pageSize.getHeight() - bitmap.getHeight()) * zoom / 2;
+
         int srcLeft = 0;
         int srcTop = 0;
         int srcRight = srcLeft + Math.round(bitmap.getWidth());
         int srcBottom = srcTop + Math.round(bitmap.getHeight());
-        float bitmapWidth = bitmap.getWidth() * zoom;
-        float bitmapHeight = bitmap.getHeight() * zoom;
         Rect mWatermarkSrcRect = new Rect(srcLeft, srcTop, srcRight, srcBottom);
-        RectF watermarkDestRect = new RectF(destLeft, destTop, destLeft + bitmapWidth,
-                destTop + bitmapHeight);
+
+        float dragZoom = mWatermarkArea.getZoom();
+        if(dragPinchManager.ismIsTouchInWatermarkZoomBall()) {
+            dragZoom *= mWatermarkRatio;
+            mWatermarkArea.setZoom(dragZoom);
+        }
+        float destLeft = pagesOffset[0] + spaceOffset[0] +
+                (pageSize.getWidth() - bitmap.getWidth() * dragZoom) * zoom  / 2;
+        float destTop = pagesOffset[1] + spaceOffset[1] +
+                (pageSize.getHeight() - bitmap.getHeight() * dragZoom) * zoom / 2;
+        float zoomWidth = bitmap.getWidth() * zoom * dragZoom;
+        float zoomHeight = bitmap.getHeight() * zoom * dragZoom;
+        RectF watermarkDestRect = new RectF(destLeft, destTop, destLeft + zoomWidth,
+                destTop + zoomHeight);
+
         mWatermarkArea.setWatermarkDestRect(watermarkDestRect);
         canvas.drawBitmap(bitmap, mWatermarkSrcRect, watermarkDestRect, mWatermarkArea.getBitmapPaint());
         bitmap.recycle();
