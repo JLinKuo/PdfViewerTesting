@@ -1676,17 +1676,17 @@ public class PDFView extends RelativeLayout {
                 getResources(), R.drawable.ic_icon_delete_red_bg, null));
         float[] delBallSize = setWatermarkDelBallSize(area.getDelBall(), delBitmap.getWidth(),
                 delBitmap.getHeight(), area);
-        canvas.drawBitmap(delBitmap, delBallSize[0], delBallSize[2], new Paint());
+        canvas.drawBitmap(delBitmap, delBallSize[0], delBallSize[1], new Paint());
         delBitmap.recycle();
     }
 
     private float[] setWatermarkDelBallSize(WatermarkArea.DelBall ball, int width, int height, WatermarkArea area) {
-        float[] ballSize = new float[] { area.getRight() - width / 2F,              // Left
-                                         area.getRight() + width / 2F,              // Right
-                                         area.getTop() - height / 2F,               // Top
-                                         area.getTop() + height / 2F };             // Bottom
-        ball.setLeft(ballSize[0]).setRight(ballSize[1]).setTop(ballSize[2]).setBottom(ballSize[3]);
-        return ballSize;
+        float[] ballSides = new float[] { area.getRight() - width / 2F,              // Left
+                                          area.getTop() - height / 2F,               // Top
+                                          area.getRight() + width / 2F,              // Right
+                                          area.getTop() + height / 2F };             // Bottom
+        ball.setLeft(ballSides[0]).setTop(ballSides[1]).setRight(ballSides[2]).setBottom(ballSides[3]);
+        return ballSides;
     }
 
     private void drawWatermarkAnZoomBall(Canvas canvas, WatermarkArea area) {
@@ -1694,26 +1694,17 @@ public class PDFView extends RelativeLayout {
                 getResources(), R.drawable.ic_icon_zoom_yellow_bg, null));
         float[] delBallSize = setWatermarkZoomBallSize(area.getZoomBall(), delBitmap.getWidth(),
                 delBitmap.getHeight(), area);
-        canvas.drawBitmap(delBitmap, delBallSize[0], delBallSize[2], new Paint());
+        canvas.drawBitmap(delBitmap, delBallSize[0], delBallSize[1], new Paint());
         delBitmap.recycle();
     }
 
     private float[] setWatermarkZoomBallSize(WatermarkArea.ZoomBall ball, int width, int height, WatermarkArea area) {
-        float[] ballSize = new float[] { area.getRight() - width / 2F,              // Left
-                                         area.getRight() + width / 2F,              // Right
-                                         area.getBottom() - height / 2F,            // Top
-                                         area.getBottom() + height / 2F };          // Bottom
-        ball.setLeft(ballSize[0]).setRight(ballSize[1]).setTop(ballSize[2]).setBottom(ballSize[3]);
-        return ballSize;
-    }
-
-    private float[] getWatermarkAreaSize(WatermarkArea area, int[] pagesOffset, float[] spaceOffset) {
-        return new float[]{
-                pagesOffset[0] + area.getLeft() * zoom + spaceOffset[0],        // Left
-                pagesOffset[0] + area.getRight() * zoom + spaceOffset[0],       // Right
-                pagesOffset[1] + area.getTop() * zoom + spaceOffset[1],         // Top
-                pagesOffset[1] + area.getBottom() * zoom + spaceOffset[1]       // Bottom
-        };
+        float[] ballSides = new float[] { area.getRight() - width / 2F,              // Left
+                                          area.getBottom() - height / 2F,            // Top
+                                          area.getRight() + width / 2F,              // Right
+                                          area.getBottom() + height / 2F };          // Bottom
+        ball.setLeft(ballSides[0]).setTop(ballSides[1]).setRight(ballSides[2]).setBottom(ballSides[3]);
+        return ballSides;
     }
 
     private void doDrawSignAreaInFocus(Canvas canvas, String key) {
