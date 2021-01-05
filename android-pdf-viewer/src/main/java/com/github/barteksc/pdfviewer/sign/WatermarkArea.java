@@ -33,14 +33,20 @@ public class WatermarkArea {
     public ZoomBall getZoomBall() { return zoomBall; }
     public DelBall getDelBall() { return delBall; }
 
-    public Paint getBitmapPaint() {
+    public Paint getWatermarkPaint() {
         if(bitmapPaint == null) {
             bitmapPaint = new Paint();
             bitmapPaint.setStyle(Paint.Style.STROKE);
             bitmapPaint.setAntiAlias(true);
-            int alphaRed = Color.argb(127, 0, 0, 0);
-            bitmapPaint.setColor(alphaRed);
         }
+        int alpha = Color.argb(127, 0, 0, 0);
+        bitmapPaint.setColor(alpha);
+
+        return bitmapPaint;
+    }
+    public Paint getWatermarkInFocusPaint() {
+        int alpha = Color.argb(255, 0, 0, 0);
+        bitmapPaint.setColor(alpha);
 
         return bitmapPaint;
     }

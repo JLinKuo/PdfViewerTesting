@@ -682,5 +682,6 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     public String getCurrentTouchAreaTag() {
         return mTagCurrentTouchArea;
     }
+    public boolean ismIsTouchInWatermark() { return mIsTouchInWatermark; }
     public boolean ismIsTouchInWatermarkZoomBall() { return mIsTouchInWatermarkZoomBall; }
 }
