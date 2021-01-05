@@ -459,6 +459,10 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
     private boolean chkTouchInSignArea(MotionEvent event) {
         // 20201208 JLin added
+        if(mIsTouchInWatermark || mIsTouchInWatermarkDelBall ||mIsTouchInWatermarkZoomBall) {
+            return false;
+        }
+
         mMapSignAreas = pdfView.getCurrentPageMapSignAreas();
 
         if(mMapSignAreas == null) return false;
