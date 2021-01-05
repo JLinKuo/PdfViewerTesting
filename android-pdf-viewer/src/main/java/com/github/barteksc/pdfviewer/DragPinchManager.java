@@ -382,14 +382,17 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     private HashMap<String, SignArea> mMapSignAreas = new HashMap<>();
     private String mTagCurrentTouchArea = "";       // 用以表示目前觸碰的區域是簽名框/浮水印
 
+    // 浮水印
     private boolean mIsTouchInWatermark = false;
     private boolean mIsTouchInWatermarkZoomBall = false;
     private boolean mIsTouchInWatermarkDelBall = false;
+    // 簽名區
+    private boolean mIsTouchInSignArea = false;
     private boolean mIsTouchInSignAreaZoomBall = false;
     private boolean mIsTouchInSignAreaAddBall = false;
     private boolean mIsTouchInSignAreaDelBall = false;
-    private boolean mIsTouchInSignArea = false;
 
+    // 共用函式
     private void cleanAreaInFocus() {
         mTagCurrentTouchArea = "";
         mIsTouchInWatermark = false;
@@ -402,23 +405,202 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         pdfView.invalidate();
     }
 
+    // 浮水印
+    public boolean isTouchInWatermark() {
+        return mIsTouchInWatermark;
+    }
+    public boolean isTouchInWatermarkZoomBall() {
+        return mIsTouchInWatermarkZoomBall;
+    }
+    private boolean chkTouchInWatermarkArea(MotionEvent event) {
+        WatermarkArea mWatermarkArea = pdfView.getWatermarkArea();
+
+        if(mWatermarkArea == null) { return false; }
+        mIsTouchInWatermarkDelBall = false;
+        mIsTouchInWatermarkZoomBall = false;
+        if(isTouchInWatermark(event)) {
+            return true;
+        }
+
+        return false;
+    }
+    private boolean isTouchInWatermark(MotionEvent event) {
+        WatermarkArea mWatermarkArea = pdfView.getWatermarkArea();
+        if(mWatermarkArea == null) { return false; }
+
+        float xOffset = pdfView.getCurrentXOffset();
+        float yOffset = pdfView.getCurrentYOffset();
+        float eventXOffset = event.getX() - xOffset;
+        float eventYOffset = event.getY() - yOffset;
+
+        if(isInWatermarkBall(mWatermarkArea.getDelBall(), eventXOffset, eventYOffset)) {
+            mIsTouchInWatermarkDelBall = true;
+            return true;
+        } else if(isInWatermarkBall(mWatermarkArea.getZoomBall(), eventXOffset, eventYOffset)) {
+            mIsTouchInWatermarkZoomBall = true;
+            return true;
+        } else if (isInWatermarkArea(mWatermarkArea, eventXOffset, eventYOffset)) {
+            mIsTouchInWatermark = true;
+            mTagCurrentTouchArea = mWatermarkArea.getTag();
+            return true;
+        }
+
+        return false;
+    }
+    private boolean isInWatermarkArea(WatermarkArea area, float eventX, float eventY) {
+        float areaLeft = area.getLeft() * pdfView.getZoom();
+        float areaRight = area.getRight() * pdfView.getZoom();
+        float areaTop = area.getTop() * pdfView.getZoom();
+        float areaBottom = area.getBottom() * pdfView.getZoom();
+
+        return eventX > areaLeft && eventX < areaRight && eventY > areaTop && eventY < areaBottom;
+    }
+    private boolean isInWatermarkBall(FunctionBall ball, float eventX, float eventY) {
+        float ballLeft = ball.getLeft();
+        float ballRight = ball.getRight();
+        float ballTop = ball.getTop();
+        float ballBottom = ball.getBottom();
+
+        return eventX > ballLeft && eventX < ballRight && eventY > ballTop && eventY < ballBottom;
+    }
     private void setWatermarkInFocus() {
         mIsTouchInWatermark = true;
         pdfView.invalidate();
     }
-
     private void deleteWatermark() {
         pdfView.setWatermarkArea(null);
         pdfView.invalidate();
         mIsTouchInWatermarkDelBall = false;
         mIsTouchInWatermark = false;
     }
+    private void zoomWatermark(float distanceX, float distanceY) {
+        if(distanceX * distanceY > 0) {                 // 表示手勢滑動是往左上或右下
+            WatermarkArea area = pdfView.getWatermarkArea();
 
+            if(area == null) { return; }
+            if(area.getTag().equals(mTagCurrentTouchArea)) {
+                float areaWidth = area.getRight() - area.getLeft();
+                float areaHeight = area.getBottom() - area.getTop();
+                double areaDiagonal = Math.sqrt(Math.pow(areaWidth, 2) + Math.pow(areaHeight, 2));
+                double fingerMove = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
+                double newDiagonal = areaDiagonal;
+                if(distanceX < 0 && distanceX < 0) {     // 負數表示往右下滑動，正數表示往左上滑動
+                    newDiagonal += fingerMove;
+                } else {
+                    newDiagonal -= fingerMove;
+                }
+                float ratio = (float) (newDiagonal / areaDiagonal);
+
+                pdfView.setWatermarkRatio(ratio);
+                pdfView.invalidate();
+            }
+        }
+    }
+
+    // 簽名框
+    public String getCurrentTouchAreaTag() {
+        return mTagCurrentTouchArea;
+    }
+    private boolean chkTouchInSignArea(MotionEvent event) {
+        // 20201208 JLin added
+        if(mIsTouchInWatermark || mIsTouchInWatermarkDelBall ||mIsTouchInWatermarkZoomBall) {
+            return false;
+        }
+
+        mMapSignAreas = pdfView.getCurrentPageMapSignAreas();
+
+        if(mMapSignAreas == null) return false;
+
+        if(mMapSignAreas.size() != 0) {
+            // 取消三個功能圓球的touch flag
+            mIsTouchInSignAreaZoomBall = false;
+            mIsTouchInSignAreaAddBall = false;
+            mIsTouchInSignAreaDelBall = false;
+
+            if (isTouchInFocusSignArea(event)) {
+                return true;
+            } else if (isTouchInAllOtherSignArea(event)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    private boolean isTouchInAllOtherSignArea(MotionEvent event) {
+        Iterator<String> mapIterator = mMapSignAreas.keySet().iterator();
+        while (mapIterator.hasNext()) {
+            String key = mapIterator.next();
+
+            SignArea area = mMapSignAreas.get(key);
+
+            if(area == null) { continue; }
+            if(area.getTag().equals(key)) {
+                int[] pagesOffset = pdfView.getPreviousPagesOffset();
+
+                float xOffset = pdfView.getCurrentXOffset();
+                float yOffset = pdfView.getCurrentYOffset();
+                float eventXOffset = event.getX() - xOffset;
+                float eventYOffset = event.getY() - yOffset;
+
+                if (isInAnSignArea(area, pagesOffset, eventXOffset, eventYOffset)) {
+                    mIsTouchInSignArea = true;
+                    mTagCurrentTouchArea = key;
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+    private boolean isTouchInFocusSignArea(MotionEvent event) {
+        SignArea area = mMapSignAreas.get(mTagCurrentTouchArea);
+
+        if(area == null) { return false; }
+        if(area.getTag().equals(mTagCurrentTouchArea)) {
+            int[] pagesOffset = pdfView.getPreviousPagesOffset();
+
+            float xOffset = pdfView.getCurrentXOffset();
+            float yOffset = pdfView.getCurrentYOffset();
+            float eventXOffset = event.getX() - xOffset;
+            float eventYOffset = event.getY() - yOffset;
+
+            if(isInSignAreaBall(area.getDelBall(), eventXOffset, eventYOffset)) {
+                mIsTouchInSignAreaDelBall = true;
+                return true;
+            } else if(isInSignAreaBall(area.getAddBall(), eventXOffset, eventYOffset)) {
+                mIsTouchInSignAreaAddBall = true;
+                return true;
+            }  else if(isInSignAreaBall(area.getZoomBall(), eventXOffset, eventYOffset)) {
+                mIsTouchInSignAreaZoomBall = true;
+                return true;
+            } else if (isInAnSignArea(area, pagesOffset, eventXOffset, eventYOffset)) {
+                mIsTouchInSignArea = true;
+                return true;
+            }
+        }
+
+        return false;
+    }
+    private boolean isInAnSignArea(SignArea area, int[] pagesOffset, float eventX, float eventY) {
+        float areaLeft = pagesOffset[0] + area.getLeft() * pdfView.getZoom();
+        float areaRight = pagesOffset[0] + area.getRight() * pdfView.getZoom();
+        float areaTop = pagesOffset[1] + area.getTop() * pdfView.getZoom();
+        float areaBottom = pagesOffset[1] + area.getBottom() * pdfView.getZoom();
+
+        return eventX > areaLeft && eventX < areaRight && eventY > areaTop && eventY < areaBottom;
+    }
+    private boolean isInSignAreaBall(FunctionBall ball, float eventX, float eventY) {
+        float ballLeft = ball.getLeft();
+        float ballRight = ball.getRight();
+        float ballTop = ball.getTop();
+        float ballBottom = ball.getBottom();
+
+        return eventX > ballLeft && eventX < ballRight && eventY > ballTop && eventY < ballBottom;
+    }
     private void setSignAreaInFocus() {
         mIsTouchInSignArea = true;
         pdfView.invalidate();
     }
-
     private void moveSignArea(float distanceX, float distanceY) {
         SignArea area = mMapSignAreas.get(mTagCurrentTouchArea);
 
@@ -454,143 +636,6 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
             pdfView.invalidate();
         }
     }
-
-    private boolean chkTouchInWatermarkArea(MotionEvent event) {
-        WatermarkArea mWatermarkArea = pdfView.getWatermarkArea();
-
-        if(mWatermarkArea == null) { return false; }
-        mIsTouchInWatermarkDelBall = false;
-        mIsTouchInWatermarkZoomBall = false;
-        if(isTouchInWatermark(event)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    private boolean chkTouchInSignArea(MotionEvent event) {
-        // 20201208 JLin added
-        if(mIsTouchInWatermark || mIsTouchInWatermarkDelBall ||mIsTouchInWatermarkZoomBall) {
-            return false;
-        }
-
-        mMapSignAreas = pdfView.getCurrentPageMapSignAreas();
-
-        if(mMapSignAreas == null) return false;
-
-        if(mMapSignAreas.size() != 0) {
-            // 取消三個功能圓球的touch flag
-            mIsTouchInSignAreaZoomBall = false;
-            mIsTouchInSignAreaAddBall = false;
-            mIsTouchInSignAreaDelBall = false;
-
-            if (isTouchInFocusSignArea(event)) {
-                return true;
-            } else if (isTouchInAllOtherSignArea(event)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private boolean isTouchInWatermark(MotionEvent event) {
-        WatermarkArea mWatermarkArea = pdfView.getWatermarkArea();
-        if(mWatermarkArea == null) { return false; }
-
-        float xOffset = pdfView.getCurrentXOffset();
-        float yOffset = pdfView.getCurrentYOffset();
-        float eventXOffset = event.getX() - xOffset;
-        float eventYOffset = event.getY() - yOffset;
-
-        if(isInWatermarkBall(mWatermarkArea.getDelBall(), eventXOffset, eventYOffset)) {
-            mIsTouchInWatermarkDelBall = true;
-            return true;
-        } else if(isInWatermarkBall(mWatermarkArea.getZoomBall(), eventXOffset, eventYOffset)) {
-            mIsTouchInWatermarkZoomBall = true;
-            return true;
-        } else if (isInWatermarkArea(mWatermarkArea, eventXOffset, eventYOffset)) {
-            mIsTouchInWatermark = true;
-            mTagCurrentTouchArea = mWatermarkArea.getTag();
-            return true;
-        }
-
-        return false;
-    }
-
-    private boolean isInWatermarkArea(WatermarkArea area, float eventX, float eventY) {
-        float areaLeft = area.getLeft() * pdfView.getZoom();
-        float areaRight = area.getRight() * pdfView.getZoom();
-        float areaTop = area.getTop() * pdfView.getZoom();
-        float areaBottom = area.getBottom() * pdfView.getZoom();
-
-        return eventX > areaLeft && eventX < areaRight && eventY > areaTop && eventY < areaBottom;
-    }
-
-    private boolean isTouchInAllOtherSignArea(MotionEvent event) {
-        Iterator<String> mapIterator = mMapSignAreas.keySet().iterator();
-        while (mapIterator.hasNext()) {
-            String key = mapIterator.next();
-
-            SignArea area = mMapSignAreas.get(key);
-
-            if(area == null) { continue; }
-            if(area.getTag().equals(key)) {
-                int[] pagesOffset = pdfView.getPreviousPagesOffset();
-
-                float xOffset = pdfView.getCurrentXOffset();
-                float yOffset = pdfView.getCurrentYOffset();
-                float eventXOffset = event.getX() - xOffset;
-                float eventYOffset = event.getY() - yOffset;
-
-                if (isInAnSignArea(area, pagesOffset, eventXOffset, eventYOffset)) {
-                    mIsTouchInSignArea = true;
-                    mTagCurrentTouchArea = key;
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    private boolean isTouchInFocusSignArea(MotionEvent event) {
-        SignArea area = mMapSignAreas.get(mTagCurrentTouchArea);
-
-        if(area == null) { return false; }
-        if(area.getTag().equals(mTagCurrentTouchArea)) {
-            int[] pagesOffset = pdfView.getPreviousPagesOffset();
-
-            float xOffset = pdfView.getCurrentXOffset();
-            float yOffset = pdfView.getCurrentYOffset();
-            float eventXOffset = event.getX() - xOffset;
-            float eventYOffset = event.getY() - yOffset;
-
-            if(isInSignAreaBall(area.getDelBall(), eventXOffset, eventYOffset)) {
-                mIsTouchInSignAreaDelBall = true;
-                return true;
-            } else if(isInSignAreaBall(area.getAddBall(), eventXOffset, eventYOffset)) {
-                mIsTouchInSignAreaAddBall = true;
-                return true;
-            }  else if(isInSignAreaBall(area.getZoomBall(), eventXOffset, eventYOffset)) {
-                mIsTouchInSignAreaZoomBall = true;
-                return true;
-            } else if (isInAnSignArea(area, pagesOffset, eventXOffset, eventYOffset)) {
-                mIsTouchInSignArea = true;
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private void deleteSignArea() {
-        pdfView.getMapSignAreas().remove(mTagCurrentTouchArea);
-        pdfView.invalidate();
-        mIsTouchInSignAreaDelBall = false;
-        mIsTouchInSignArea = false;
-    }
-
     private void addSignArea() {
         HashMap<String, SignArea> currentPageSignAreas = pdfView.getMapSignAreas();
         SignArea area = currentPageSignAreas.get(mTagCurrentTouchArea);
@@ -608,31 +653,12 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
             mIsTouchInSignAreaAddBall = false;
         }
     }
-
-    private void zoomWatermark(float distanceX, float distanceY) {
-        if(distanceX * distanceY > 0) {                 // 表示手勢滑動是往左上或右下
-            WatermarkArea area = pdfView.getWatermarkArea();
-
-            if(area == null) { return; }
-            if(area.getTag().equals(mTagCurrentTouchArea)) {
-                float areaWidth = area.getRight() - area.getLeft();
-                float areaHeight = area.getBottom() - area.getTop();
-                double areaDiagonal = Math.sqrt(Math.pow(areaWidth, 2) + Math.pow(areaHeight, 2));
-                double fingerMove = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
-                double newDiagonal = areaDiagonal;
-                if(distanceX < 0 && distanceX < 0) {     // 負數表示往右下滑動，正數表示往左上滑動
-                    newDiagonal += fingerMove;
-                } else {
-                    newDiagonal -= fingerMove;
-                }
-                float ratio = (float) (newDiagonal / areaDiagonal);
-
-                pdfView.setWatermarkRatio(ratio);
-                pdfView.invalidate();
-            }
-        }
+    private void deleteSignArea() {
+        pdfView.getMapSignAreas().remove(mTagCurrentTouchArea);
+        pdfView.invalidate();
+        mIsTouchInSignAreaDelBall = false;
+        mIsTouchInSignArea = false;
     }
-
     private void zoomSignArea(float distanceX, float distanceY) {
         if(distanceX * distanceY > 0) {                 // 表示手勢滑動是往左上或右下
             SignArea area = pdfView.getMapSignAreas().get(mTagCurrentTouchArea);
@@ -662,37 +688,4 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
             }
         }
     }
-
-    private boolean isInAnSignArea(SignArea area, int[] pagesOffset, float eventX, float eventY) {
-        float areaLeft = pagesOffset[0] + area.getLeft() * pdfView.getZoom();
-        float areaRight = pagesOffset[0] + area.getRight() * pdfView.getZoom();
-        float areaTop = pagesOffset[1] + area.getTop() * pdfView.getZoom();
-        float areaBottom = pagesOffset[1] + area.getBottom() * pdfView.getZoom();
-
-        return eventX > areaLeft && eventX < areaRight && eventY > areaTop && eventY < areaBottom;
-    }
-
-    private boolean isInWatermarkBall(FunctionBall ball, float eventX, float eventY) {
-        float ballLeft = ball.getLeft();
-        float ballRight = ball.getRight();
-        float ballTop = ball.getTop();
-        float ballBottom = ball.getBottom();
-
-        return eventX > ballLeft && eventX < ballRight && eventY > ballTop && eventY < ballBottom;
-    }
-
-    private boolean isInSignAreaBall(FunctionBall ball, float eventX, float eventY) {
-        float ballLeft = ball.getLeft();
-        float ballRight = ball.getRight();
-        float ballTop = ball.getTop();
-        float ballBottom = ball.getBottom();
-
-        return eventX > ballLeft && eventX < ballRight && eventY > ballTop && eventY < ballBottom;
-    }
-
-    public String getCurrentTouchAreaTag() {
-        return mTagCurrentTouchArea;
-    }
-    public boolean ismIsTouchInWatermark() { return mIsTouchInWatermark; }
-    public boolean ismIsTouchInWatermarkZoomBall() { return mIsTouchInWatermarkZoomBall; }
 }

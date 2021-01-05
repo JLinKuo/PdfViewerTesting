@@ -6,13 +6,12 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 
 public class WatermarkArea {
-    private String tag = "";
     private int mWatermarkRes = -1;
     private float zoom = 1f;
+    private String tag = "";
     private RectF mWatermarkDestRect = null;
     private Paint bitmapPaint = null;
     private Paint outlinePaint = null;
-
     private ZoomBall zoomBall = new ZoomBall();
     private DelBall delBall = new DelBall();
 
@@ -21,18 +20,14 @@ public class WatermarkArea {
         this.mWatermarkRes = watermarkRes;
     }
 
-    public String getTag() { return tag; }
+    public int getWatermarkRes() { return mWatermarkRes; }
     public float getLeft() { return mWatermarkDestRect.left; }
     public float getTop() { return mWatermarkDestRect.top; }
     public float getRight() { return mWatermarkDestRect.right; }
     public float getBottom() { return mWatermarkDestRect.bottom; }
     public float getZoom() { return zoom; }
-    public int getWatermarkRes() { return mWatermarkRes; }
+    public String getTag() { return tag; }
     public RectF getWatermarkDestRect() { return mWatermarkDestRect; }
-
-    public ZoomBall getZoomBall() { return zoomBall; }
-    public DelBall getDelBall() { return delBall; }
-
     public Paint getWatermarkPaint() {
         if(bitmapPaint == null) {
             bitmapPaint = new Paint();
@@ -62,11 +57,12 @@ public class WatermarkArea {
 
         return outlinePaint;
     }
-
     public void setZoom(float zoom) { this.zoom = zoom; }
     public void setWatermarkDestRect(RectF watermarkDestRect) {
         this.mWatermarkDestRect = watermarkDestRect;
     }
+    public ZoomBall getZoomBall() { return zoomBall; }
+    public DelBall getDelBall() { return delBall; }
 
     public class ZoomBall extends FunctionBall {}
     public class DelBall extends FunctionBall {}

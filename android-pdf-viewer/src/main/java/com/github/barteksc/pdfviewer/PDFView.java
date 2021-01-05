@@ -1578,19 +1578,74 @@ public class PDFView extends RelativeLayout {
     //20201201: JLin Added
     private WatermarkArea mWatermarkArea = null;
     private float mWatermarkRatio = 1;
-    public void setWatermarkRatio(float ratio) {
-        this.mWatermarkRatio = ratio;
-    }
-
     private HashMap<Integer, HashMap<String, SignArea>> mMapPageSignAreas = new HashMap<>();
 
+    // 共用的函式
+    // 計算目前頁面之前所有頁面的寬度或高度
+    public int[] getPreviousPagesOffset() {
+        int[] offset = {0, 0};      // offset[0] -> offsetX / offset[1] -> offsetY
+        for(int i = 0; i < currentPage; i++) {
+            SizeF size = getPageSize(currentPage);
+            if(swipeVertical) {
+                offset[1] += size.getHeight() * zoom;
+            } else {
+                offset[0] += size.getWidth() * zoom;
+            }
+        }
+        return offset;
+    }
+    // 計算目前頁面之前所有頁面與頁面間的空白寬度
+    public float[] getEachPageSpaceOffset() {
+        float[] offset = {0, 0};
+        if(currentPage != 0) {
+            if (swipeVertical) {
+                offset[1] = spacingPx * zoom;
+            } else {
+                offset[0] = spacingPx * zoom;
+            }
+        }
+        return offset;
+    }
+
+    // 繪出取得焦點的區域
+    private void drawInFocusArea(Canvas canvas) {
+        String key = dragPinchManager.getCurrentTouchAreaTag();
+        if(mWatermarkArea != null && mWatermarkArea.getTag().equals(key)) {
+            doDrawWatermarkInFocus(canvas, key);
+        } else {
+            doDrawSignAreaInFocus(canvas, key);
+        }
+    }
+    // 繪畫功能球
+    private Bitmap drawable2Bitmap(Drawable drawable) {
+        if(drawable instanceof BitmapDrawable) {
+            return ((BitmapDrawable)drawable).getBitmap();
+        }
+
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(),
+                drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+
+        return bitmap;
+    }
+    //////
+
+    // 浮水印
+    public void setWatermarkArea(WatermarkArea area) { mWatermarkArea = area; }
+    public WatermarkArea getWatermarkArea() { return mWatermarkArea; }
+    public void showWatermark(int watermarkRes) {
+        String tag = String.valueOf(System.currentTimeMillis());
+        mWatermarkArea = new WatermarkArea(tag, watermarkRes);
+    }
+    public void setWatermarkRatio(float ratio) { this.mWatermarkRatio = ratio; }
     private void drawWatermark(Canvas canvas) {
         if(mWatermarkArea == null) { return; }
         if(!dragPinchManager.getCurrentTouchAreaTag().equals(mWatermarkArea.getTag())) {
             drawWatermarkBitmap(canvas);
         }
     }
-
     private void drawWatermarkBitmap(Canvas canvas) {
         if(mWatermarkArea == null) { return; }
 
@@ -1606,7 +1661,7 @@ public class PDFView extends RelativeLayout {
         Rect mWatermarkSrcRect = new Rect(srcLeft, srcTop, srcRight, srcBottom);
 
         float dragZoom = mWatermarkArea.getZoom();
-        if(dragPinchManager.ismIsTouchInWatermarkZoomBall()) {
+        if(dragPinchManager.isTouchInWatermarkZoomBall()) {
             dragZoom *= mWatermarkRatio;
             mWatermarkArea.setZoom(dragZoom);
         }
@@ -1621,50 +1676,16 @@ public class PDFView extends RelativeLayout {
 
         mWatermarkArea.setWatermarkDestRect(watermarkDestRect);
         Paint watermarkPaint = mWatermarkArea.getWatermarkPaint();
-        if(dragPinchManager.ismIsTouchInWatermark()) {
+        if(dragPinchManager.isTouchInWatermark()) {
             watermarkPaint = mWatermarkArea.getWatermarkInFocusPaint();
         }
         canvas.drawBitmap(bitmap, mWatermarkSrcRect, watermarkDestRect, watermarkPaint);
         bitmap.recycle();
     }
-
     private void drawWatermarkOutline(Canvas canvas) {
         if(mWatermarkArea == null) { return; }
         canvas.drawRect(mWatermarkArea.getWatermarkDestRect(), mWatermarkArea.getOutlinePaint());
     }
-
-    private void drawAllOtherSignAreas(Canvas canvas) {
-        HashMap<String, SignArea> mapSignAreas = mMapPageSignAreas.get(currentPage);
-        if(mapSignAreas != null && mapSignAreas.size() != 0) {
-            int[] pagesOffset = getPreviousPagesOffset();
-            float[] spaceOffset = getEachPageSpaceOffset();
-
-            Iterator<String> mapIterator = mapSignAreas.keySet().iterator();
-            while(mapIterator.hasNext()) {
-                String key = mapIterator.next();
-                SignArea area = mapSignAreas.get(key);
-
-                if(area == null) { continue; }
-                if(area.getTag().equals(key)) {
-                    if(dragPinchManager.getCurrentTouchAreaTag().equals(key)) { continue; }
-
-                    float[] areaSize = getSignAreaSize(area, pagesOffset, spaceOffset);
-                    // 畫出一個簽名框
-                    drawAnSignArea(canvas, area, areaSize, pagesOffset, spaceOffset);
-                }
-            }
-        }
-    }
-
-    private void drawInFocusArea(Canvas canvas) {
-        String key = dragPinchManager.getCurrentTouchAreaTag();
-        if(mWatermarkArea != null && mWatermarkArea.getTag().equals(key)) {
-            doDrawWatermarkInFocus(canvas, key);
-        } else {
-            doDrawSignAreaInFocus(canvas, key);
-        }
-    }
-
     private void doDrawWatermarkInFocus(Canvas canvas, String key) {
         if(mWatermarkArea == null) { return; }
         if(mWatermarkArea.getTag().equals(key)) {
@@ -1710,7 +1731,40 @@ public class PDFView extends RelativeLayout {
         ball.setLeft(ballSides[0]).setTop(ballSides[1]).setRight(ballSides[2]).setBottom(ballSides[3]);
         return ballSides;
     }
+    /////
 
+    // 簽名框
+    public HashMap<String, SignArea> getMapSignAreas() {
+        return mMapPageSignAreas.get(currentPage);
+    }
+    public HashMap<Integer, HashMap<String, SignArea>> getMapPageSignAreas() {
+        return mMapPageSignAreas;
+    }
+    public HashMap<String, SignArea> getCurrentPageMapSignAreas() {
+        return mMapPageSignAreas.get(currentPage);
+    }
+    private void drawAllOtherSignAreas(Canvas canvas) {
+        HashMap<String, SignArea> mapSignAreas = mMapPageSignAreas.get(currentPage);
+        if(mapSignAreas != null && mapSignAreas.size() != 0) {
+            int[] pagesOffset = getPreviousPagesOffset();
+            float[] spaceOffset = getEachPageSpaceOffset();
+
+            Iterator<String> mapIterator = mapSignAreas.keySet().iterator();
+            while(mapIterator.hasNext()) {
+                String key = mapIterator.next();
+                SignArea area = mapSignAreas.get(key);
+
+                if(area == null) { continue; }
+                if(area.getTag().equals(key)) {
+                    if(dragPinchManager.getCurrentTouchAreaTag().equals(key)) { continue; }
+
+                    float[] areaSize = getSignAreaSize(area, pagesOffset, spaceOffset);
+                    // 畫出一個簽名框
+                    drawAnSignArea(canvas, area, areaSize, pagesOffset, spaceOffset);
+                }
+            }
+        }
+    }
     private void doDrawSignAreaInFocus(Canvas canvas, String key) {
         HashMap<String, SignArea> mapSignAreas = mMapPageSignAreas.get(currentPage);
         if (mapSignAreas != null && mapSignAreas.size() != 0) {
@@ -1733,7 +1787,6 @@ public class PDFView extends RelativeLayout {
             }
         }
     }
-
     private void drawAnSignArea(Canvas canvas, SignArea area, float[] areaSize, int[] pagesOffset, float[] spaceOffset) {
         Paint bgPaint = area.getBackGroundPaint();
         Paint outlinePaint = area.getOutlinePaint();
@@ -1747,7 +1800,6 @@ public class PDFView extends RelativeLayout {
         // 畫出 Date
         drawDateText(canvas, area, pagesOffset, spaceOffset);
     }
-
     private void drawEMailText(Canvas canvas, SignArea area, int[] pagesOffset, float[] spaceOffset) {
         String email = area.getEllipsizedEmail(zoom);
         float[] coordinate = area.getEmailCoordinate(zoom);
@@ -1755,7 +1807,6 @@ public class PDFView extends RelativeLayout {
         float y = pagesOffset[1] + spaceOffset[1] + coordinate[1];
         canvas.drawText(email, x, y, area.getEmailPaint());
     }
-
     private void drawDateText(Canvas canvas, SignArea area, int[] pagesOffset, float[] spaceOffset) {
         String date = area.getEllipsizedDate(zoom);
         float[] coordinate = area.getDateCoordinate(zoom);
@@ -1763,7 +1814,6 @@ public class PDFView extends RelativeLayout {
         float y = pagesOffset[1] + spaceOffset[1] + coordinate[1];
         canvas.drawText(date, x, y, area.getDatePaint());
     }
-
     private float[] getSignAreaSize(SignArea area, int[] pagesOffset, float[] spaceOffset) {
         return new float[]{
                 pagesOffset[0] + area.getLeft() * zoom + spaceOffset[0],        // Left
@@ -1820,59 +1870,5 @@ public class PDFView extends RelativeLayout {
         ball.setLeft(ballSides[0]).setTop(ballSides[1]).setRight(ballSides[2]).setBottom(ballSides[3]);
         return ballSides;
     }
-    public WatermarkArea getWatermarkArea() {
-        return mWatermarkArea;
-    }
-    public void setWatermarkArea(WatermarkArea area) {
-        mWatermarkArea = area;
-    }
-    public HashMap<String, SignArea> getMapSignAreas() {
-        return mMapPageSignAreas.get(currentPage);
-    }
-    public void showWatermark(int watermarkRes) {
-        String tag = String.valueOf(System.currentTimeMillis());
-        mWatermarkArea = new WatermarkArea(tag, watermarkRes);
-    }
-    public HashMap<Integer, HashMap<String, SignArea>> getMapPageSignAreas() {
-        return mMapPageSignAreas;
-    }
-    public HashMap<String, SignArea> getCurrentPageMapSignAreas() {
-        return mMapPageSignAreas.get(currentPage);
-    }
-    public int[] getPreviousPagesOffset() {     // 計算目前頁面之前所有頁面的寬度或高度
-        int[] offset = {0, 0};      // offset[0] -> offsetX / offset[1] -> offsetY
-        for(int i = 0; i < currentPage; i++) {
-            SizeF size = getPageSize(currentPage);
-            if(swipeVertical) {
-                offset[1] += size.getHeight() * zoom;
-            } else {
-                offset[0] += size.getWidth() * zoom;
-            }
-        }
-        return offset;
-    }
-    public float[] getEachPageSpaceOffset() {
-        float[] offset = {0, 0};
-        if(currentPage != 0) {
-            if (swipeVertical) {
-                offset[1] = spacingPx * zoom;
-            } else {
-                offset[0] = spacingPx * zoom;
-            }
-        }
-        return offset;
-    }
-    private Bitmap drawable2Bitmap(Drawable drawable) {
-        if(drawable instanceof BitmapDrawable) {
-            return ((BitmapDrawable)drawable).getBitmap();
-        }
-
-        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(),
-                drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
-        drawable.draw(canvas);
-
-        return bitmap;
-    }
+    /////
 }
