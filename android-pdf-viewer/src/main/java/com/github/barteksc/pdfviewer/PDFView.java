@@ -1675,9 +1675,11 @@ public class PDFView extends RelativeLayout {
                 destTop + zoomHeight);
 
         mWatermarkArea.setWatermarkDestRect(watermarkDestRect);
-        Paint watermarkPaint = mWatermarkArea.getWatermarkPaint();
+        // 浮水印呈現是半透明的樣式
+        Paint watermarkPaint = mWatermarkArea.getWatermarkPaint(127);
         if(dragPinchManager.isTouchInWatermark()) {
-            watermarkPaint = mWatermarkArea.getWatermarkInFocusPaint();
+            // 浮水印呈現是不透明的樣式
+            watermarkPaint = mWatermarkArea.getWatermarkPaint(255);
         }
         canvas.drawBitmap(bitmap, mWatermarkSrcRect, watermarkDestRect, watermarkPaint);
         bitmap.recycle();

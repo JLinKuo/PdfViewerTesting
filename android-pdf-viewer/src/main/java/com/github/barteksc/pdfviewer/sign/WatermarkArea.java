@@ -28,19 +28,13 @@ public class WatermarkArea {
     public float getZoom() { return zoom; }
     public String getTag() { return tag; }
     public RectF getWatermarkDestRect() { return mWatermarkDestRect; }
-    public Paint getWatermarkPaint() {
+    public Paint getWatermarkPaint(int alphaValue) {
         if(bitmapPaint == null) {
             bitmapPaint = new Paint();
             bitmapPaint.setStyle(Paint.Style.STROKE);
             bitmapPaint.setAntiAlias(true);
         }
-        int alpha = Color.argb(127, 0, 0, 0);
-        bitmapPaint.setColor(alpha);
-
-        return bitmapPaint;
-    }
-    public Paint getWatermarkInFocusPaint() {
-        int alpha = Color.argb(255, 0, 0, 0);
+        int alpha = Color.argb(alphaValue, 0, 0, 0);
         bitmapPaint.setColor(alpha);
 
         return bitmapPaint;
