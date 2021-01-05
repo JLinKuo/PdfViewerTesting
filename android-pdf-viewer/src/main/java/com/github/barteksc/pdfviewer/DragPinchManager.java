@@ -144,6 +144,11 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
     @Override
     public boolean onDoubleTap(MotionEvent e) {
+        // 20210105 JLin Added
+        // 雙擊範圍在取得焦點的View中，就取消雙擊放大PDF的功能
+        if(isSignWatermarkInFocus()) { return false; }
+        //
+
         if (!pdfView.isDoubletapEnabled()) {
             return false;
         }
@@ -156,6 +161,12 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
             pdfView.resetZoomWithAnimation();
         }
         return true;
+    }
+
+    private boolean isSignWatermarkInFocus() {
+        return mIsTouchInWatermark || mIsTouchInWatermarkDelBall || mIsTouchInWatermarkZoomBall ||
+               mIsTouchInSignArea || mIsTouchInSignAreaAddBall || mIsTouchInSignAreaDelBall ||
+               mIsTouchInSignAreaZoomBall;
     }
 
     @Override
