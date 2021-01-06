@@ -129,12 +129,6 @@ class MainActivity : AppCompatActivity() {
 //                         addAnWatermark(canvas, pageWidth, pageHeight, zoom)
                      }
                  }
-                 .onPageChange { page, pageCount ->
-                     if(pdfViewer.mapPageSignAreas[page].isNullOrEmpty()) {
-                         val mapSignArea = HashMap<String, SignArea>()
-                         pdfViewer.mapPageSignAreas[page] = mapSignArea
-                     }
-                 }
                  .load()
     }
 

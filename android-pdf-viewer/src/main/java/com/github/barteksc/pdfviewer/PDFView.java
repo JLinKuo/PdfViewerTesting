@@ -336,6 +336,9 @@ public class PDFView extends RelativeLayout {
         }
 
         callbacks.callOnPageChange(currentPage, pdfFile.getPagesCount());
+
+        // 20210106 JLin Added
+        isNeedCreateCurrentPageSignAreaMap();
     }
 
     /**
@@ -1752,6 +1755,12 @@ public class PDFView extends RelativeLayout {
             mapSignArea.put(tag, area);
         }
         invalidate();
+    }
+    private void isNeedCreateCurrentPageSignAreaMap() {
+        if(mMapPageSignAreas.get(currentPage) == null) {
+            HashMap<String, SignArea> mapSignArea = new HashMap<>();
+            mMapPageSignAreas.put(currentPage, mapSignArea);
+        }
     }
     private void drawAllOtherSignAreas(Canvas canvas) {
         HashMap<String, SignArea> mapSignAreas = mMapPageSignAreas.get(currentPage);
