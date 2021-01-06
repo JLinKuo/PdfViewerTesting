@@ -18,8 +18,9 @@ import java.io.File
 
 internal const val PICK_PDF_RESULT = 555
 internal const val TEMP_SAVE_FILES_PATH = "temp/"
+private const val SIGN_AREA_WIDTH_HEIGHT_RATIO = 3
 private const val SIGN_NAME_AREA_WIDTH = 600
-private const val SIGN_NAME_AREA_HEIGHT = SIGN_NAME_AREA_WIDTH / 2
+private const val SIGN_NAME_AREA_HEIGHT = SIGN_NAME_AREA_WIDTH / SIGN_AREA_WIDTH_HEIGHT_RATIO
 
 class MainActivity : AppCompatActivity() {
 
@@ -101,12 +102,17 @@ class MainActivity : AppCompatActivity() {
 
         val centerX = pdfViewer.width / 2
         val centerY = pdfViewer.height / 2
+        val signAreaWidth = (pdfViewer.width * 3 / 4)
+        val signAreaHeight = signAreaWidth / SIGN_AREA_WIDTH_HEIGHT_RATIO
+        val signLeft = centerX - signAreaWidth / 2
+        val signTop = centerY - signAreaHeight / 2
+        val signRight = signLeft + signAreaWidth
+        val signBottom = signTop + signAreaHeight
 
-        val signLeft = centerX - SIGN_NAME_AREA_WIDTH / 2
-        val signTop = centerY - SIGN_NAME_AREA_HEIGHT
+        val tag = System.currentTimeMillis().toString()
 
-        pdfViewer.addSignArea(System.currentTimeMillis().toString(), signLeft + offset,
-            signTop + offset, signLeft + SIGN_NAME_AREA_WIDTH + offset, signTop + SIGN_NAME_AREA_HEIGHT + offset);
+        pdfViewer.addSignArea(tag, signLeft + offset, signTop + offset, signRight + offset,
+            signBottom + offset)
         times++
     }
 
