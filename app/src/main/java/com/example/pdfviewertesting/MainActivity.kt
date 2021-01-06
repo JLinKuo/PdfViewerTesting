@@ -40,7 +40,6 @@ class MainActivity : AppCompatActivity() {
     private val minSignAreaHeight = minSignAreaWidth / 2
 
     private var times = 0                   // 用以紀錄繪製第幾個簽名框
-    private var mCurrentPage = 0            // 用以紀錄PDF當前的頁面
 
     private var isDrawWaterMark = false     // 判斷是否要繪製浮水印
 
@@ -106,16 +105,9 @@ class MainActivity : AppCompatActivity() {
         val signLeft = centerX - SIGN_NAME_AREA_WIDTH / 2
         val signTop = centerY - SIGN_NAME_AREA_HEIGHT
 
-        addSignArea(mCurrentPage, System.currentTimeMillis().toString(), signLeft + offset,
-            signTop + offset, signLeft + SIGN_NAME_AREA_WIDTH + offset, signTop + SIGN_NAME_AREA_HEIGHT + offset)
-        pdfViewer.invalidate()
+        pdfViewer.addSignArea(System.currentTimeMillis().toString(), signLeft + offset,
+            signTop + offset, signLeft + SIGN_NAME_AREA_WIDTH + offset, signTop + SIGN_NAME_AREA_HEIGHT + offset);
         times++
-    }
-
-    private fun addSignArea(pageIndex: Int, tag: String, left: Int, top: Int, right: Int, bottom: Int) {
-        pdfViewer.mapPageSignAreas[pageIndex]?.apply {
-            this[tag] = SignArea(tag, "yaerse@gmail.com", left, top, right, bottom)
-        }
     }
 
     // 透過pdfviewer的listener來畫出不能縮放的浮水印
@@ -142,7 +134,6 @@ class MainActivity : AppCompatActivity() {
                          val mapSignArea = HashMap<String, SignArea>()
                          pdfViewer.mapPageSignAreas[page] = mapSignArea
                      }
-                     this.mCurrentPage = page
                  }
                  .load()
     }

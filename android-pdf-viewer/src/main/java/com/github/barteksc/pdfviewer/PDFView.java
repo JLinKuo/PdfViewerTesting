@@ -1745,6 +1745,14 @@ public class PDFView extends RelativeLayout {
     public HashMap<String, SignArea> getCurrentPageMapSignAreas() {
         return mMapPageSignAreas.get(currentPage);
     }
+    public void addSignArea(String tag, int left, int top, int right, int bottom) {
+        SignArea area = new SignArea(tag, "yaerse@gmail.com", left, top, right, bottom);
+        HashMap<String, SignArea> mapSignArea = mMapPageSignAreas.get(currentPage);
+        if(mapSignArea != null) {
+            mapSignArea.put(tag, area);
+        }
+        invalidate();
+    }
     private void drawAllOtherSignAreas(Canvas canvas) {
         HashMap<String, SignArea> mapSignAreas = mMapPageSignAreas.get(currentPage);
         if(mapSignAreas != null && mapSignAreas.size() != 0) {
