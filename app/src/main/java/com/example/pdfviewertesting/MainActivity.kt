@@ -93,7 +93,6 @@ class MainActivity : AppCompatActivity() {
             // 繪製可以放大縮小的浮水印
             pdfViewer.showWatermark(R.drawable.ic_launcher_round)
             isDrawWaterMark = true
-            pdfViewer.invalidate()
         }
     }
 

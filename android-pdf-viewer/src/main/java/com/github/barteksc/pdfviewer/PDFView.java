@@ -1641,6 +1641,7 @@ public class PDFView extends RelativeLayout {
     public void showWatermark(int watermarkRes) {
         String tag = String.valueOf(System.currentTimeMillis());
         mWatermarkArea = new WatermarkArea(tag, watermarkRes);
+        invalidate();
     }
     public void setWatermarkRatio(float ratio) { this.mWatermarkRatio = ratio; }
     private void drawWatermark(Canvas canvas) {
