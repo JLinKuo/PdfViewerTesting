@@ -54,6 +54,7 @@ import com.github.barteksc.pdfviewer.listener.OnRenderListener;
 import com.github.barteksc.pdfviewer.listener.OnTapListener;
 import com.github.barteksc.pdfviewer.model.PagePart;
 import com.github.barteksc.pdfviewer.scroll.ScrollHandle;
+import com.github.barteksc.pdfviewer.sign.FunctionBall;
 import com.github.barteksc.pdfviewer.sign.SignArea;
 import com.github.barteksc.pdfviewer.sign.WatermarkArea;
 import com.github.barteksc.pdfviewer.source.AssetSource;
@@ -1633,6 +1634,21 @@ public class PDFView extends RelativeLayout {
 
         return bitmap;
     }
+    private void drawFunctionBall(Canvas canvas, FunctionBall ball, int res, float x, float y) {
+        Drawable drawable = ResourcesCompat.getDrawable(getResources(), res, null);
+        Bitmap btp = drawable2Bitmap(drawable);
+        float[] ballSides = setFuncBallSides(ball, btp.getWidth(), btp.getHeight(), x, y);
+        canvas.drawBitmap(btp, ballSides[0], ballSides[1], new Paint());
+        btp.recycle();
+    }
+    private float[] setFuncBallSides(FunctionBall ball, int width, int height, float x, float y) {
+        float[] ballSides = new float[] { x - width / 2F,              // Left
+                y - height / 2F,             // Top
+                x + width / 2F,              // Right
+                y + height / 2F };           // Bottom
+        ball.setLeft(ballSides[0]).setTop(ballSides[1]).setRight(ballSides[2]).setBottom(ballSides[3]);
+        return ballSides;
+    }
     //////
 
     // 浮水印
@@ -1701,41 +1717,15 @@ public class PDFView extends RelativeLayout {
             drawWatermarkAnZoomBall(canvas, mWatermarkArea);
         }
     }
-
     private void drawWatermarkAnDelBall(Canvas canvas, WatermarkArea area) {
-        Bitmap delBitmap = drawable2Bitmap(ResourcesCompat.getDrawable(
-                getResources(), R.drawable.ic_icon_delete_red_bg, null));
-        float[] delBallSize = setWatermarkDelBallSize(area.getDelBall(), delBitmap.getWidth(),
-                delBitmap.getHeight(), area);
-        canvas.drawBitmap(delBitmap, delBallSize[0], delBallSize[1], new Paint());
-        delBitmap.recycle();
+        float x = area.getRight();
+        float y = area.getTop();
+        drawFunctionBall(canvas, area.getDelBall(), R.drawable.ic_icon_delete_red_bg, x, y);
     }
-
-    private float[] setWatermarkDelBallSize(WatermarkArea.DelBall ball, int width, int height, WatermarkArea area) {
-        float[] ballSides = new float[] { area.getRight() - width / 2F,              // Left
-                                          area.getTop() - height / 2F,               // Top
-                                          area.getRight() + width / 2F,              // Right
-                                          area.getTop() + height / 2F };             // Bottom
-        ball.setLeft(ballSides[0]).setTop(ballSides[1]).setRight(ballSides[2]).setBottom(ballSides[3]);
-        return ballSides;
-    }
-
     private void drawWatermarkAnZoomBall(Canvas canvas, WatermarkArea area) {
-        Bitmap delBitmap = drawable2Bitmap(ResourcesCompat.getDrawable(
-                getResources(), R.drawable.ic_icon_zoom_yellow_bg, null));
-        float[] delBallSize = setWatermarkZoomBallSize(area.getZoomBall(), delBitmap.getWidth(),
-                delBitmap.getHeight(), area);
-        canvas.drawBitmap(delBitmap, delBallSize[0], delBallSize[1], new Paint());
-        delBitmap.recycle();
-    }
-
-    private float[] setWatermarkZoomBallSize(WatermarkArea.ZoomBall ball, int width, int height, WatermarkArea area) {
-        float[] ballSides = new float[] { area.getRight() - width / 2F,              // Left
-                                          area.getBottom() - height / 2F,            // Top
-                                          area.getRight() + width / 2F,              // Right
-                                          area.getBottom() + height / 2F };          // Bottom
-        ball.setLeft(ballSides[0]).setTop(ballSides[1]).setRight(ballSides[2]).setBottom(ballSides[3]);
-        return ballSides;
+        float x = area.getRight();
+        float y = area.getBottom();
+        drawFunctionBall(canvas, area.getZoomBall(), R.drawable.ic_icon_zoom_yellow_bg, x, y);
     }
     /////
 
@@ -1842,53 +1832,20 @@ public class PDFView extends RelativeLayout {
                 pagesOffset[1] + area.getBottom() * zoom + spaceOffset[1]       // Bottom
         };
     }
-    private void drawSignAreaAnZoomBall(Canvas canvas, SignArea area, float[] areaSize) {
-        Bitmap zoomBitmap = drawable2Bitmap(ResourcesCompat.getDrawable(
-                getResources(), R.drawable.ic_icon_zoom_yellow_bg, null));
-        float[] zoomBallSize = setSignAreaZoomBallSize(area.getZoomBall(), zoomBitmap.getWidth(),
-                zoomBitmap.getHeight(), areaSize);
-        canvas.drawBitmap(zoomBitmap, zoomBallSize[0], zoomBallSize[1], new Paint());
-        zoomBitmap.recycle();
+    private void drawSignAreaAnZoomBall(Canvas canvas, SignArea area, float[] areaSides) {
+        float x = areaSides[2];
+        float y = areaSides[3];
+        drawFunctionBall(canvas, area.getZoomBall(), R.drawable.ic_icon_zoom_yellow_bg, x, y);
     }
-    private float[] setSignAreaZoomBallSize(SignArea.ZoomBall ball, int width, int height, float[] areaSize) {
-        float[] ballSides = new float[] { areaSize[2] - width / 2F,              // Left
-                                          areaSize[3] - height / 2F,             // Top
-                                          areaSize[2] + width / 2F,              // Right
-                                          areaSize[3] + height / 2F };           // Bottom
-        ball.setLeft(ballSides[0]).setTop(ballSides[1]).setRight(ballSides[2]).setBottom(ballSides[3]);
-        return ballSides;
+    private void drawSignAreaAnAddBall(Canvas canvas, SignArea area, float[] areaSides) {
+        float x = areaSides[0];
+        float y = areaSides[1];
+        drawFunctionBall(canvas, area.getAddBall(), R.drawable.ic_icon_add_yellow_bg, x, y);
     }
-    private void drawSignAreaAnAddBall(Canvas canvas, SignArea area, float[] areaSize) {
-        Bitmap addBitmap = drawable2Bitmap(ResourcesCompat.getDrawable(
-                getResources(), R.drawable.ic_icon_add_yellow_bg, null));
-        float[] addBallSize = setSignAreaAddBallSize(area.getAddBall(), addBitmap.getWidth(),
-                addBitmap.getHeight(), areaSize);
-        canvas.drawBitmap(addBitmap, addBallSize[0], addBallSize[1], new Paint());
-        addBitmap.recycle();
-    }
-    private float[] setSignAreaAddBallSize(SignArea.AddBall ball, int width, int height, float[] areaSize) {
-        float[] ballSides = new float[] { areaSize[0] - width / 2F,              // Left
-                                          areaSize[1] - height / 2F,             // Top
-                                          areaSize[0] + width / 2F,              // Right
-                                          areaSize[1] + height / 2F };           // Bottom
-        ball.setLeft(ballSides[0]).setTop(ballSides[1]).setRight(ballSides[2]).setBottom(ballSides[3]);
-        return ballSides;
-    }
-    private void drawSignAreaAnDelBall(Canvas canvas, SignArea area, float[] areaSize) {
-        Bitmap delBitmap = drawable2Bitmap(ResourcesCompat.getDrawable(
-                getResources(), R.drawable.ic_icon_delete_red_bg, null));
-        float[] delBallSize = setSignAreaDelBallSize(area.getDelBall(), delBitmap.getWidth(),
-                delBitmap.getHeight(), areaSize);
-        canvas.drawBitmap(delBitmap, delBallSize[0], delBallSize[1], new Paint());
-        delBitmap.recycle();
-    }
-    private float[] setSignAreaDelBallSize(SignArea.DelBall ball, int width, int height, float[] areaSize) {
-        float[] ballSides = new float[] { areaSize[2] - width / 2F,              // Left
-                                          areaSize[1] - height / 2F,             // Top
-                                          areaSize[2] + width / 2F,              // Right
-                                          areaSize[1] + height / 2F };           // Bottom
-        ball.setLeft(ballSides[0]).setTop(ballSides[1]).setRight(ballSides[2]).setBottom(ballSides[3]);
-        return ballSides;
+    private void drawSignAreaAnDelBall(Canvas canvas, SignArea area, float[] areaSides) {
+        float x = areaSides[2];
+        float y = areaSides[1];
+        drawFunctionBall(canvas, area.getDelBall(), R.drawable.ic_icon_delete_red_bg, x, y);
     }
     /////
 }
