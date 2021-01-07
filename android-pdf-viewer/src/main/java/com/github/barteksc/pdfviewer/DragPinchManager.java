@@ -33,6 +33,7 @@ import com.shockwave.pdfium.util.SizeF;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import static com.github.barteksc.pdfviewer.sign.SignArea.SIGN_AREA_WIDTH_HEIGHT_RATIO;
 import static com.github.barteksc.pdfviewer.util.Constants.Pinch.MAXIMUM_ZOOM;
 import static com.github.barteksc.pdfviewer.util.Constants.Pinch.MINIMUM_ZOOM;
 
@@ -673,6 +674,11 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
                 int newWidth = (int) Math.max(Math.round(areaWidth * ratio), MIN_WIDTH_SIGN_AREA);
                 int newHeight = (int) Math.max(Math.round(areaHeight * ratio), MIN_HEIGHT_SIGN_AREA);
+                SizeF pageSize = pdfView.getPageSize(pdfView.getCurrentPage());
+                if(newWidth > pageSize.getWidth() - area.getLeft()) {
+                    newWidth = (int) Math.floor(pageSize.getWidth() - area.getLeft());
+                    newHeight = newWidth / SIGN_AREA_WIDTH_HEIGHT_RATIO;
+                }
 
                 area.setLeft(area.getLeft()).
                      setTop(area.getTop()).

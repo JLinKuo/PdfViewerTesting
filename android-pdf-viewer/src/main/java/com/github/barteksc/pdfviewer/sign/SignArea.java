@@ -12,6 +12,8 @@ import static android.text.TextUtils.TruncateAt.END;
 import static android.text.TextUtils.TruncateAt.START;
 
 public class SignArea {
+    public static int SIGN_AREA_WIDTH_HEIGHT_RATIO = 3;
+
     private String DEFAULT_DATE_FORMAT = "yyyy/mm/dd";
     private int DEFAULT_TEXT_SIZE = 16;
     private int DEFAULT_EMAIL_START_OFFSET = 8;
