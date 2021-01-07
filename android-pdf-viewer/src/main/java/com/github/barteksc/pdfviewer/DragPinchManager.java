@@ -146,8 +146,8 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     public boolean onDoubleTap(MotionEvent e) {
         // 20210105 JLin Added
         // 雙擊範圍在取得焦點的View中，就取消雙擊放大PDF的功能
-        if(isSignWatermarkInFocus()) { return false; }
-        //
+        if(isAreaInFocus()) { return false; }
+        /////
 
         if (!pdfView.isDoubletapEnabled()) {
             return false;
@@ -161,12 +161,6 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
             pdfView.resetZoomWithAnimation();
         }
         return true;
-    }
-
-    private boolean isSignWatermarkInFocus() {
-        return mIsTouchInWatermark || mIsTouchInWatermarkDelBall || mIsTouchInWatermarkZoomBall ||
-               mIsTouchInSignArea || mIsTouchInSignAreaAddBall || mIsTouchInSignAreaDelBall ||
-               mIsTouchInSignAreaZoomBall;
     }
 
     @Override
@@ -190,6 +184,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
     @Override
     public boolean onSingleTapUp(MotionEvent e) {
+        // JLin Added
         if(mIsTouchInWatermarkDelBall) {
             deleteWatermark();
             return true;
@@ -208,6 +203,8 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         } else {
             cleanAreaInFocus();
         }
+        //////
+
         return false;
     }
 
@@ -228,7 +225,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
             moveSignArea(distanceX, distanceY);
             return true;
         }
-        //
+        //////
 
         scrolling = true;
         if (pdfView.isZooming() || pdfView.isSwipeEnabled()) {
@@ -353,7 +350,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
                 mIsTouchInWatermarkZoomBall = false;
             } else if(mIsTouchInSignAreaZoomBall) {
                 mIsTouchInSignAreaZoomBall = false;
-            //
+            //////
             } else if (scrolling) {
                 scrolling = false;
                 onScrollEnd(event);
@@ -386,7 +383,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     private boolean mIsTouchInWatermark = false;
     private boolean mIsTouchInWatermarkZoomBall = false;
     private boolean mIsTouchInWatermarkDelBall = false;
-    // 簽名區
+    // 簽名框
     private boolean mIsTouchInSignArea = false;
     private boolean mIsTouchInSignAreaZoomBall = false;
     private boolean mIsTouchInSignAreaAddBall = false;
@@ -403,6 +400,11 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         mIsTouchInSignAreaZoomBall = false;
         mIsTouchInSignArea = false;
         pdfView.invalidate();
+    }
+    private boolean isAreaInFocus() {
+        return mIsTouchInWatermark || mIsTouchInWatermarkDelBall || mIsTouchInWatermarkZoomBall ||
+                mIsTouchInSignArea || mIsTouchInSignAreaAddBall || mIsTouchInSignAreaDelBall ||
+                mIsTouchInSignAreaZoomBall;
     }
     private boolean isInFunctionBall(FunctionBall ball, float eventX, float eventY) {
         float ballLeft = ball.getLeft();
