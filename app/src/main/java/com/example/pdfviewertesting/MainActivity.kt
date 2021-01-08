@@ -110,8 +110,8 @@ class MainActivity : AppCompatActivity() {
 
         val tag = System.currentTimeMillis().toString()
 
-        pdfViewer.addSignArea(tag, signLeft + offset, signTop + offset, signRight + offset,
-            signBottom + offset)
+        pdfViewer.addAnSignArea(tag, "yaerse@gmail.com", signLeft + offset,
+            signTop + offset, signRight + offset, signBottom + offset)
         times++
     }
 
