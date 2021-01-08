@@ -337,9 +337,6 @@ public class PDFView extends RelativeLayout {
         }
 
         callbacks.callOnPageChange(currentPage, pdfFile.getPagesCount());
-
-        // 20210106 JLin Added
-        isNeedCreateCurrentPageSignAreaMap();
     }
 
     /**
@@ -1741,13 +1738,17 @@ public class PDFView extends RelativeLayout {
     }
     public void addSignArea(String tag, int left, int top, int right, int bottom) {
         SignArea area = new SignArea(tag, "yaerse@gmail.com", left, top, right, bottom);
+
+        // 判斷目前的頁面的簽名框Map是否為null，若是則需要創件新的Map物件
+        isNeedCreateCurrentPageSignAreasMap();
+
         HashMap<String, SignArea> mapSignArea = mMapPageSignAreas.get(currentPage);
         if(mapSignArea != null) {
             mapSignArea.put(tag, area);
         }
         invalidate();
     }
-    private void isNeedCreateCurrentPageSignAreaMap() {
+    private void isNeedCreateCurrentPageSignAreasMap() {
         if(mMapPageSignAreas.get(currentPage) == null) {
             HashMap<String, SignArea> mapSignArea = new HashMap<>();
             mMapPageSignAreas.put(currentPage, mapSignArea);
