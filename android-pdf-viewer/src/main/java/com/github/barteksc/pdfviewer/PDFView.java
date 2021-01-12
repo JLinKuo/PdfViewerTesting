@@ -1753,6 +1753,23 @@ public class PDFView extends RelativeLayout {
             e.printStackTrace();
         }
     }
+    public void addAnSignArea(int pageNum, String tag, String email, int left, int top, int right, int bottom) {
+        HashMap<String, SignArea> mapSignAreas = mMapPageSignAreas.get(pageNum);
+        if(mapSignAreas == null) {
+            mapSignAreas = new HashMap<>();
+            mMapPageSignAreas.put(pageNum, mapSignAreas);
+        }
+        mapSignAreas.put(tag, new SignArea(tag, email, left, top, right, bottom));
+        invalidate();
+
+        // 因為這些程式碼執行的時間很短，所以timestamp可能會一樣
+        // 所以需要等待一些時間，讓timestamp都不一致
+        try {
+            Thread.sleep(1L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
     private void drawAllOtherSignAreas(Canvas canvas) {
         HashMap<String, SignArea> mapSignAreas = mMapPageSignAreas.get(currentPage);
         if(mapSignAreas != null && mapSignAreas.size() != 0) {
